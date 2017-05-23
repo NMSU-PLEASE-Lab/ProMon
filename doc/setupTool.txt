@@ -1,0 +1,111 @@
+Prerequisite for Dyninst
+Dyninst need libdwarf.a which ubuntu (system I use) has it. But it is not compile with -fPIC. 
+So you need to download that lib and compile it yourself.
+
+prerequisite 1: 
+(for libdwarf)
+	wget http://www.mr511.de/software/libelf-0.8.13.tar.gz
+	 tar -zxvf libelf-0.8.13.tar.gz
+	./configure
+	./make
+
+prerequisite 2:
+	wget https://www.prevanders.net/libdwarf-20121130.tar.gz
+	tar -zxvf libdwarf-20121130.tar.gz
+	./configure
+	./BLDLIBDWARF
+
+Dyninst needs dwarf to be compiled  with -fPIC so go to ~/dwarf-20121130/libdwarf
+	vim Makefile
+add -fPIC to the compile command 
+	./configure LDFLAGS="-L/home/hsharifi/libelf-0.8.13/lib" CPPFLAGS="-I/home/hsharifi/libelf-0.8.13/lib"
+	./BLDLIBDWARF
+
+
+--------------------------------------------------------------------------
+Installing Dyninst
+
+Make sure you own the dyninst-8.0 directory. Do these two changes to Dyninst:
+
+1- Changes in the configure file. In my case, it is pointing to my home directory for elf and warf:
+	LIBELF_INC_DIR="/home/hsharifi/libelf-0.8.13/lib";
+	LIBELF_LIB_DIR="/home/hsharifi/libelf-0.8.13/lib";
+	LIBDWARF_INC_DIR="/home/hsharifi/dwarf-20121130/libdwarf";
+	LIBDWARF_LIB_DIR="/home/hsharifi/dwarf-20121130/libdwarf";
+OR
+	mdir build
+	cd build
+	./configure --with-libelf=/home/oaaziz/Build/libelf --with-libdwarf-libdir=/home/oaaziz/Source/dwarf-20161124/libdwarf --with-libdwarf-incdir=/home/oaaziz/Source/dwarf-20161124/libdwarf --with-boost=/home/oaaziz/Source/boost_1_54_0
+	make
+
+2- Uncomment line 14 from
+	 /stackwalk/src/dbginfo-stepper.C
+
+
+wget http://www.dyninst.org/sites/default/files/downloads/dyninst/8.0/dyninstAPI- full-8.0.tgz
+tar -zxvf dyninstAPI-full-8.0.tgz
+cd dyninst-8.0
+./configure
+make
+
+
+============================================================================================
+
+Installing Gadget and testing it:
+
+Prerequisite 1: fftw
+	wget http://www.fftw.org/fftw-3.3.3.tar.gz
+	cd fftw-3.3.3
+	./configure --enable-mpi --prefix=/home/hsharifi/fftw-3.3.3
+	make
+	make install 		(this will install it in the /home/hsharifi/fftw-3.3.3 as defined with configure option)
+
+Prereuquisite 2: gsl
+	wget http://mirror.yongbok.net/gnu/gsl/gsl-1.15.tar.gz
+	cd  gsl-1.15
+	./configure --prefix=/home/hsharifi/gsl-1.15
+	make
+	make install
+
+
+Unzip the vms.tar.gz into a direcoty path. I put it in the home directory (/home/hsharifi/)
+
+cd Gadget-2.0.6/Gadget2
+-------------------------------------------------
+Edit Makefile and make sure the 
+correct home directory and 
+correct path for mpi compiler is selected. 
+line   84 -->	HOMEDIR = /home/hsharifi
+line 104 --> 	MPICHLIB =  -L/usr/lib
+
+-------------------------------------------------
+make clean
+make
+
+while in Gadget-2.0.6/Gadget2:
+	vim parameterfiles/galaxy.param
+make sure InitCondFile, OutputDir, OutputListFilename to point to the correct directory.
+Specially InitCondFile should point to the correct .dat file.
+For initial test, it should point to files in directory vms/apps/Gadget-2.0.6/Gadget2/parameterfiles
+
+To test while in Gadget-2.0.6/Gadget2 run this command:
+mpirun -np 1 ./Gadget2 parameterfiles/galaxy.param
+
+====================================================================================
+in where unzipped the archieve file (in my case home directory) there is a script called "script".
+vim script
+
+There are many "export" command for shred libraries.
+Make sure it is pointing to the correct directories.
+
+If you are using slurm, run Gadget by dyninst :
+	sbatch script
+check the log file for any errors.
+
+====================================================================================
+To run Gadget in restart mode, you need to copy one of the snapshots to ininital file.
+Because each snapshot has "attribute" now, you can have to copy with --preserve=xattr parameter
+
+for example 
+	cp --preserve=xattr  snapshot_000 galaxy_littleendian.dat
+

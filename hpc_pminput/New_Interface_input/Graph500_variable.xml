@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<PML>
+   <ProcLimiter>1</ProcLimiter>
+   <MonElement>
+      <Priority>0</Priority>
+      <Type>DUAL</Type>
+      <Category>Application</Category>
+      <Name>dual,function,main</Name>
+      <BeginPoint>
+         <Function>main</Function>
+         <Position>BEGIN</Position>
+      </BeginPoint>
+      <EndPoint>
+        <Function>main</Function>
+        <Position>END</Position>
+      </EndPoint>
+   </MonElement>
+   <MonElement>
+      <Priority>0</Priority>
+      <Type>DATA_ACCESS</Type>
+      <Category>Application</Category>
+      <Name>data,variable,visitedsize</Name>
+      <Point>
+         <Function>run_bfs</Function>
+         <Position>END</Position>
+      </Point>
+      <Variable>
+         <Type>int</Type>
+         <Name>visited_size</Name>
+      </Variable>
+   </MonElement>
+</PML>

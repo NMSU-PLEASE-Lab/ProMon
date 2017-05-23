@@ -1,0 +1,26 @@
+./pmsetup.sh ~/Source/applications/lulesh2.0.3/lulesh2.0 ~/Source/ProMon/run/lulesh_mainonly.xml
+
+. /home/ujjwal/Source/ProMon/run/export_var.sh
+
+
+Analyzer:
+vim ProMon.cfg - change the ip
+
+MPI Hello World with Promon
+==========================
+
+Compile
+mpic++ -g -o mpi_hello main.cpp
+
+
+
+. /home/ujjwal/Source/ProMon/run/export_var.sh
+~/Source/ProMon/run/pmsetup.sh ~/Source/applications/mpi_hello/mpi_hello ~/Source/ProMon/run/lulesh_mainonly.xml
+
+
+Output on control c
+=============
+DATA:0;ujjwal;PBS;(null);1495494372;160686426;DUAL;End;RECORD-PROGRAMMABLE;Program#0#1;1;0;|
+
+
+

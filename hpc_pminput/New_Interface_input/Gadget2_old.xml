@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<ProMonLang>
+   <Instrumentation>
+      <Priority>0</Priority>
+      <Mode>TAG_DUAL</Mode>
+      <Category>Run</Category>
+      <Function1>main</Function1>
+      <Position1>BEGIN</Position1>
+      <Function2>main</Function2>
+      <Position2>END</Position2>
+      <Tag>
+         <TagName>TEST_RUN</TagName>
+         <Data>Gadget2</Data>
+      </Tag>
+   </Instrumentation> 
+</ProMonLang>
