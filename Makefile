@@ -15,10 +15,10 @@
 # One easy way is to set the environment variable in Promon.cfg
 
 # To compile in Debug mode, uncomment the line below.
-  export DEBUG = -DDEBUG
+ # export DEBUG = -DDEBUG
 
 # To compile monitoring probe functions in Debug mode, uncomment the line below.
-  export DEBUG_PROBFUNC = -DDEBUG_PROBFUNC
+ # export DEBUG_PROBFUNC = -DDEBUG_PROBFUNC
 
 # To enable logging uncomment 
 # You can select default logging or Boost logging by next configuration
@@ -29,23 +29,14 @@
   #export BOOSTLOG = -DBOOSTLOG
 
 # Customize this part based on your configuration.
-#<<<<<<< .mine
 # We need to have ./confiure app for Promon to define these variable.
   CXX = g++
   CC = gcc
   MPICC = mpicc
   MPICXX = mpicxx
-  DYNINSTPATH = /home/ujjwal/Build/DyninstAPI-8.1.2
-  BOOSTPATH = /home/ujjwal/Build/boost_1_54_0
-#=======
-# We need to have ./configure app for Promon to define these variable.
-#  CXX = /home/hsharifi/APPS/gcc-4.8.1/bin/g++
-#  CC = /home/hsharifi/APPS/gcc-4.8.1/bin/gcc
-#  MPICC = /home/hsharifi/APPS/openmpi-1.6.5/bin/mpicc
-#  MPICXX = /home/hsharifi/APPS/openmpi-1.6.5/bin/mpic++ 
-#  DYNINSTPATH = /home/hsharifi/APPS/DyninstAPI-8.1.2
-#  BOOSTPATH = /home/hsharifi/APPS/boost_1_54_0
-#>>>>>>> .r889
+  DYNINSTPATH = /home/ujjwal/Build/DyninstAPI-9.3.2
+  BOOSTPATH = /home/ujjwal/Build/boost_1_61_0
+
 
 # Compiler flags
   export COMPIL_FLAGS = -Wall -O0 -fPIC  

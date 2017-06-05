@@ -2,7 +2,14 @@
 CMakeLists.txt
 cmake-build-debug
 bigdat_sub
+dimin
+hostfiles
+dimin
 *.o
 lib/
 run/
 pmlogs/
+*.log
+promon_analyzer
+promon_injector
+promon_report

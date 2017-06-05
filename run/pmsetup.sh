@@ -22,7 +22,7 @@ PMSPEC=$2
 # Setup ProMon stuff: it's home, the job system being used, and the
 # IP/Port where the server will be running at
 #
-export PROMONHOME=/home/ujjwal/Source/ProMon
+export PROMONHOME=/home/ujjwal/Source/ProMon2
 export JOB_SYSTEM=PBS
 #export PROMONIP_INT=11.128.0.31
 #export PROMONIP=$MYIP
@@ -42,14 +42,14 @@ echo "Promon server running on $PROMONIP"
 #
 #
 #cd /lscratch2/joncook/promon
-cd /home/ujjwal/Source/ProMon
+cd /home/ujjwal/Source/ProMon2
 # I think the server may not need the adjusted libpath, but it
 # doesn't seem to bother anything right now; the ProMon tools
 # are compiled using the Gnu compilers, and the miniGhost we are
 # using is compiled with PGI, so our environment is not set up
 # automatically for Gnu
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/ujjwal/Source/dwarf-20140413/lib:/home/ujjwal/Build/DyninstAPI-8.1.2/lib
-#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/nmsu/tools/dwarf-20140413/lib:/nmsu/tools/DyninstAPI-8.1.2/lib:/nmsu/tools/gsl-1.15/lib
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/ujjwal/Source/dwarf-20140413/lib:/home/ujjwal/Build/DyninstAPI-9.3.2/lib
+export LD_LIBRARY_PATH=/home/ujjwal/Build/DyninstAPI-9.3.2/lib
 #${PROMONHOME}/promon_analyzer &> pma.out.$PBS_JOBID &
 # allow server time to initialize
 #sleep 5
@@ -68,7 +68,7 @@ echo "Promon server running on $PROMONIP"
 # a new binary that is instrumented
 #
 export LD_LIBRARY_PATH=${PROMONHOME}/probe:$LD_LIBRARY_PATH
-export DYNINSTAPI_RT_LIB=/home/ujjwal/Build/DyninstAPI-8.1.2/lib/libdyninstAPI_RT.so
+export DYNINSTAPI_RT_LIB=/home/ujjwal/Build/DyninstAPI-9.3.2/lib/libdyninstAPI_RT.so
 
 INJECTOR=${PROMONHOME}/promon_injector
 #PROMONSPEC=/home/joncook/pminput/miniGhost.xml

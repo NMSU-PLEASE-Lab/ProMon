@@ -1,6 +1,6 @@
-./pmsetup.sh ~/Source/applications/lulesh2.0.3/lulesh2.0 ~/Source/ProMon/run/lulesh_mainonly.xml
+./pmsetup.sh ~/Source/applications/lulesh2.0.3/lulesh2.0 ~/Source/ProMon2/run/lulesh_mainonly.xml
 
-. /home/ujjwal/Source/ProMon/run/export_var.sh
+. /home/ujjwal/Source/ProMon2/run/export_var.sh
 
 
 Analyzer:
@@ -8,19 +8,39 @@ vim ProMon.cfg - change the ip
 
 MPI Hello World with Promon
 ==========================
-
 Compile
-mpic++ -g -o mpi_hello main.cpp
+mpic++ -g -o mpi_hello main.c
+. /home/ujjwal/Source/ProMon2/run/export_var.sh
+~/Source/ProMon2/run/pmsetup.sh ~/Source/applications/mpi_hello/mpi_hello ~/Source/ProMon2/run/lulesh_mainonly.xml
+./promon_analyzer
+./mpi_hello.promon
 
 
+Installation of Dyninst 9.3.2
+============================
+1. cmake 3.7 or newer required for boost_1_61_0:
+sudo apt-get remove cmake
+sudo apt-get remove cmake-data
+wget https://cmake.org/files/v3.8/cmake-3.8.1-Linux-x86_64.tar.gz
+tar -xvzf cmake-3.8.1-Linux-x86_64.tar.gz
+cd cmake-3.8.1-Linux-x86_64
+sudo cp -R * /usr/
 
-. /home/ujjwal/Source/ProMon/run/export_var.sh
-~/Source/ProMon/run/pmsetup.sh ~/Source/applications/mpi_hello/mpi_hello ~/Source/ProMon/run/lulesh_mainonly.xml
+2. Boost Installation (boost_1_61_0):
+wget https://gigenet.dl.sourceforge.net/project/boost/boost/1.61.0/boost_1_61_0.tar.gz
+	tar -xvzf boost_1_61_0.tar.gz
+	cd boost_1_61_0
+	./bootstrap.sh --prefix=/home/ujjwal/Build/boost_1_61_0
+	./b2 install --with=all
 
-
-Output on control c
-=============
-DATA:0;ujjwal;PBS;(null);1495494372;160686426;DUAL;End;RECORD-PROGRAMMABLE;Program#0#1;1;0;|
+3. Dyninst installation (Libelf, libdwarf, and libiberty will be automatically installed by dyninst)
+wget https://github.com/dyninst/dyninst/archive/v9.3.2.tar.gz  /home/ujjwal/Build/dyninst-v9.3.2.tar.gz
+cd /home/ujjwal/Build/
+tar xf dyninst-v9.3.2.tar.gz
+cd dyninst-v9.3.2
+cmake . -DCMAKE_INSTALL_PREFIX=/home/ujjwal/Build/DyninstAPI-9.3.2 -DBoost_INCLUDE_DIR=/home/ujjwal/Build/boost_1_61_0/include -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER=gcc
+make
+make install
 
 
 
