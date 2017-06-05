@@ -13,4 +13,4 @@ pmlogs/
 promon_analyzer
 promon_injector
 promon_report
-**/*.o
+*.so*
