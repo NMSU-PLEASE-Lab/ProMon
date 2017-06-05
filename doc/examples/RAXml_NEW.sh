@@ -13,5 +13,5 @@ export PBS_JOBID=8
 export APPHOME=$HOME/HPC_APPS/RAxML
 export XMLFILES=$HOME/research/PhD/Experiment-ProMon
 
-./clean.sh
+clean.sh
 mpirun -n 2 -x SLURM_JOB_ID $PROMONHOME/promon_injector DynamicInst $PROMONHOME/pminput/raxmlHPC-MPI.xml $APPHOME/raxmlHPC-MPI -m GTRGAMMA -p 12345 -s $APPHOME/input/dna.phy -# 2000 -n hadi
