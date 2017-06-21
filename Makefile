@@ -30,7 +30,7 @@ export DEBUG_PROBFUNC = -DDEBUG_PROBFUNC
 
 # To enable logging uncomment 
 # You can select default logging or Boost logging by next configuration
-  export MT_WITH_LOG = -DMT_WITH_LOG
+export MT_WITH_LOG = -DMT_WITH_LOG
 
 # ProMon uses Boost Log or Simple built in log
 # To compile with Boost log component and disable the simple built in log

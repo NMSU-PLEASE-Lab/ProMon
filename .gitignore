@@ -7,10 +7,10 @@ hostfiles
 dimin
 *.o
 lib/
-run/
 pmlogs/
 *.log
 promon_analyzer
 promon_injector
 promon_report
 *.so*
+run

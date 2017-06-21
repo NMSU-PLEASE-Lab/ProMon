@@ -39,10 +39,9 @@ Configuration file
 //#define DUAL_END "End_"
 #define DUAL_BEGIN "DUAL;Begin;"
 #define DUAL_END "DUAL;End;"
-#define SINGULAR_BEGIN "SINGULAR;Begin;"
-#define SINGULAR_END "SINGULAR;End;"
+#define SINGULAR "SINGULAR;;"
 #define APPLICATION "Application"//tag to define begin and end of application
-#define HEARTBEAT "HEARTBEAT;Begin;"
+#define HEARTBEAT "HEARTBEAT;;"
 #define SETUP "Setup"
 #define CHECKPOINT "Checkpoint"
 #define DEFENSIVEIO "DefensiveIO"
