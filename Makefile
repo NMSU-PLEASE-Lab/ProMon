@@ -1,24 +1,32 @@
-#****************************************************************************
-# Customizin ProMon
-#****************************************************************************
-# ProMon needs PROMONHOME environment variable to compile and
-# during runtime to read to create log files.
-# PROMONHOME 
+#************************* Customizin ProMon **********************************************
+# For ProMon to compile successfully, correct path must be assigned to following variables:
+# 1. PROMONHOME
+# 2. DYNINSTPATH
+# 3. BOOSTPATH
+# Other variables can be changed based on requirements
+#******************************************************************************************
 
-# Compile in serial or parallel (mpi) 
-  #export TARGET = MPI
-  export TARGET = serial
+# Compile in serial or parallel (mpi)
+# Serial Mode
+# export TARGET = serial
+# export MT_WITH_MPI= -DMT_WITH_MPI=0
 
-# The communication port can be selected among 
+# MPI Mode
+export TARGET = MPI
+export MT_WITH_MPI= -DMT_WITH_MPI=1
+
+
+# The communication port can be selected among
 # TCP, UDP, EPOLL, and MSGQUEUE.
 # The selection is done by setting COMM_TYPE.
 # One easy way is to set the environment variable in Promon.cfg
 
 # To compile in Debug mode, uncomment the line below.
- # export DEBUG = -DDEBUG
+export DEBUG = -DDEBUG
 
+export PROMONHOME=/home/ujjwal/Source/ProMon2
 # To compile monitoring probe functions in Debug mode, uncomment the line below.
- # export DEBUG_PROBFUNC = -DDEBUG_PROBFUNC
+export DEBUG_PROBFUNC = -DDEBUG_PROBFUNC
 
 # To enable logging uncomment 
 # You can select default logging or Boost logging by next configuration
@@ -26,7 +34,7 @@
 
 # ProMon uses Boost Log or Simple built in log
 # To compile with Boost log component and disable the simple built in log
-  #export BOOSTLOG = -DBOOSTLOG
+#export BOOSTLOG = -DBOOSTLOG
 
 # Customize this part based on your configuration.
 # We need to have ./confiure app for Promon to define these variable.
@@ -46,7 +54,7 @@
 #****************************************************************************
 
 TINYXML = tinyxml
-CPPFLAGS = $(COMPIL_FLAGS) $(DEBUG) $(MT_WITH_LOG) -I$(DYNINSTPATH)/include -I$(TINYXML) -I$(BOOSTPATH)
+CPPFLAGS = $(COMPIL_FLAGS) $(DEBUG) $(MT_WITH_LOG) $(MT_WITH_MPI) -I$(DYNINSTPATH)/include -I$(TINYXML) -I$(BOOSTPATH)
 
 ifneq ($(BOOSTLOG),)
    CPPFLAGS := $(CPPFLAGS) -DBOOST_LOG_DYN_LINK -DBOOST_ALL_DYN_LINK -DMT_WITH_BOOST
@@ -77,7 +85,7 @@ submakes:
 	cd probe; make TARGETCXX=$(CXX) TARGETMPICXX=$(MPICXX) DYNINSTPATH=$(DYNINSTPATH) BOOSTPATH=$(BOOSTPATH) 
 
 promon_injector: injector.o parser.o util.o
-	$(CXX) -o promon_injector injector.o parser.o util.o $(EXTOBJS) $(LDFLAGS) $(BOOSTLFLAGS) 
+	$(CXX) -o promon_injector injector.o parser.o util.o $(EXTOBJS) $(LDFLAGS) $(BOOSTLFLAGS)
 
 promon_analyzer: analyzer.o serverEPoll.o serverUDP.o serverTCP.o serverMsgQueue.o util.o server.o 
 	$(CXX) -o promon_analyzer analyzer.o serverEPoll.o serverUDP.o serverTCP.o serverMsgQueue.o util.o server.o $(LIBS) $(BOOSTLFLAGS)
