@@ -1,20 +1,16 @@
-CFLAGS := $(COMPIL_FLAGS) -lrt $(DEBUG)
+CFLAGS := $(COMPIL_FLAGS) $(DEBUG)
 
 ifeq ($(TARGET), MPI)
-  CC=$(TARGETMPICC)
+  CXX=mpicxx
   CFLAGS:= $(CFLAGS) -DMT_WITH_MPI
 else
-  CC=$(TARGETCC)
+  CXX=g++
 endif
 
 all: testapp
 
-testapp: testapp.c
-	$(CC) $(CFLAGS) testapp.c -o testapp 
-	echo 'InitCondFile       $(PROMONHOME)/test/test.txt' | cat - testInput > temp && mv temp test.txt
-	attr -q -s JOBID -V 122 test.txt 
-	attr -q -s SNAPSHOTNO -V 456 test.txt
-	
-	
+testapp: testapp.cpp
+	$(CXX) $(CFLAGS) testapp.cpp -o testapp
+
 clean:
 	rm -f *~ *.o testapp
