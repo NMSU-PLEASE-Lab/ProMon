@@ -1,7 +1,0 @@
-fpga02
-fpga03
-fpga04
-fpga05
-gpu01
-gpu02
-gpu03

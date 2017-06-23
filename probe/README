@@ -1,3 +1,0 @@
-This directory contains the main code for probing into HPC application.
-The outcome of code of this directory is a library that will be loaded by Injector at runtime.
-Injector injects "sendInstRecord" into HPC application. 

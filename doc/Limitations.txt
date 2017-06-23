@@ -1,2 +1,0 @@
-=== Loops instruments goes infinite if the binary has static inline function and you try to instrument the loop in those function as a part of non inline calling function
-==== If the binary executable has been compiled in non-optimized mode, the loops instrumentation seems to work properly.
