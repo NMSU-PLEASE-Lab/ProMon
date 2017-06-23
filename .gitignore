@@ -1,7 +1,6 @@
 .idea
 CMakeLists.txt
 cmake-build-debug
-bigdat_sub
 dimin
 hostfiles
 dimin
@@ -13,4 +12,5 @@ promon_analyzer
 promon_injector
 promon_report
 *.so*
-run
+!/bigdat_sub/
+!/run/
