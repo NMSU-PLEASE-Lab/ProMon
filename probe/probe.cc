@@ -785,7 +785,6 @@ int sendInstRecord(const char *args, const char *tag) {
 
 	return 0;
 }
-
 /*
  * This is data access probe function.
  * This function recieves the typical tag to send and the 
@@ -799,24 +798,23 @@ int accessDataInst(const char *args, const char *tag, void* varAdd) {
 	if (rank % procLimiter != 0)
 		return 0;
 
-#ifdef DEBUG_PROBFUNC
-	printf("ProMon ProbeLib: This is the var address : %p\n", varAdd);
-#endif
 
 	/* Keep a all args here. ProMon will send it one time to inform Analyzer what are the args */
 	if (prgArgs == " ") {
 		/* atExit will be called when the process exits. */
 		atexit(atExit);
 		/* Make sure no file kept open after terminating */
-		signal(SIGINT, atExit);
+		signal(SIGINT,atExit);
 		prgArgs = args;
 		string temp = "1:1:PROMON:" + string(FIRST_RECORD) + ":" + prgArgs;
 		sendInstRecord(prgArgs.c_str(), temp.c_str());
 	}
 
+
+
 	/*
 	 * The tag that is passed to this function from the monitored application is in the format
-	 * SamplingRate:Priority:Category:DATA_ACCESS:varType.
+	 * SamplingRate:Priority:Category:Name:varType.
 	 * The event that will be sent is in this format
 	 * Name:varType:value
 	 */
@@ -828,6 +826,7 @@ int accessDataInst(const char *args, const char *tag, void* varAdd) {
 	char *strippedTag;
 
 	sprintf(tmp, "%s", tag);
+
 	samplingRate = strtok(tmp, ":"); //samplingRate
 	priority = strtok(NULL, ":"); //priority
 	category = strtok(NULL, ":"); //category    
@@ -851,7 +850,11 @@ int accessDataInst(const char *args, const char *tag, void* varAdd) {
 	} else if (strcmp(varType, "float") == 0) {
 		float *temp = static_cast<float*> (varAdd);
 		sprintf(varValue, "%g", *temp);
-	} else if (strcmp(varType, "double") == 0) {
+	}else if (strcmp(varType, "long double") == 0) {
+		long double *temp = static_cast<long double*> (varAdd);
+		sprintf(varValue, "%Lg", *temp);
+	}
+	else if (strcmp(varType, "double") == 0) {
 		double *temp = static_cast<double*> (varAdd);
 		sprintf(varValue, "%g", *temp);
 	} else if (strcmp(varType, "bool") == 0) {
@@ -859,8 +862,9 @@ int accessDataInst(const char *args, const char *tag, void* varAdd) {
 		sprintf(varValue, "%s", (*temp ? "TRUE" : "FALSE"));
 	}
 
+
 	string fullTag(strippedTag);
-	fullTag += string(":") + string(varType) + string(":") + string(varValue);
+	fullTag += string(":") + string(varValue);
 
 	/* Let's send the data now */
 	if ((strcmp(comm_type, "TCP") == 0) || (strcmp(comm_type, "EPOLL") == 0)) {
