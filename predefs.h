@@ -35,8 +35,6 @@ Configuration file
 //These are related to tags
 //this is used in lib, injector and analyzer
 #define INPUT_ADDRESS "inputs" //this is the directory of all input files
-//#define DUAL_BEGIN "Begin_"
-//#define DUAL_END "End_"
 #define DUAL_BEGIN "DUAL;Begin;"
 #define DUAL_END "DUAL;End;"
 #define SINGULAR "SINGULAR;;"
@@ -47,7 +45,7 @@ Configuration file
 #define DEFENSIVEIO "DefensiveIO"
 #define PRODUCTIVEIO "ProductiveIO"
 #define RUN "Run"
-#define DATA_ACCESS "DATA_ACCESS"
+#define DATA_ACCESS "DATA_ACCESS;;"
 #define PROGRAMMABLE "-PROGRAMMABLE;Program"
 #define FIRST_RECORD "DUAL;Begin;RECORD" PROGRAMMABLE
 #define LAST_RECORD "DUAL;End;RECORD" PROGRAMMABLE

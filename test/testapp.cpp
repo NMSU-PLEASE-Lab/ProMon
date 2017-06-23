@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <inttypes.h>
+#include <iostream>
 
 /*
  * The code can be compiled in parallel (mpi) or serial.
@@ -18,6 +19,37 @@ int global1 = 100;
 float global2 = 12.21;
 long global3 = 123;
 double global4 = 123.123;
+
+int doSimIteration(int numIters, int testNumber);
+inline void testInline(int numIters, int testNumber);
+void mainBody(int argc, char *argv[]);
+
+
+int main(int argc, char *argv[])
+{
+
+    printf("BEGIN: Function main\n");
+
+#ifdef MT_WITH_MPI
+    MPI_Init(&argc, &argv); /*START MPI */
+#endif
+
+    /*
+     * We kept the entire body of the main in this function.
+     * As a test, if we instrument the "main" at the begin and end, then when the
+     * application runs in MPI mode, instrumentation occurs prior to calling MPI_Init.
+     * This will cause runtime error.
+     */
+    testInline(1,1);
+    mainBody(argc, argv);
+
+#ifdef MT_WITH_MPI
+    MPI_Finalize();  /* EXIT MPI */
+#endif
+
+    printf("END: Function main\n");
+    return 0;
+}
 
 
 int doSimIteration(int numIters, int testNumber)
@@ -48,6 +80,27 @@ int doSimIteration(int numIters, int testNumber)
 
 }
 
+inline void testInline(int numIters, int testNumber)
+{
+
+    printf("BEGIN: Function testInline\n");
+    if (testNumber < 30) {
+        printf("BEGIN: Loop 1 (testInline)\n");
+        for (int i = 0; i <= numIters / 3; i++) {
+
+        }
+        printf("END: Loop 1 (testInline)\n");
+    } else {
+        printf("BEGIN: Loop 2 (testInline)\n");
+        for (int i = 0; i <= numIters / 4; i++) {
+
+        }
+        printf("END: Loop 2 (testInline)\n");
+    }
+    printf("END: Function testInline\n");
+
+}
+
 void mainBody(int argc, char *argv[])
 {
     printf("BEGIN: Function mainBody\n");
@@ -55,7 +108,6 @@ void mainBody(int argc, char *argv[])
     int i;
     int numIters = NUM_OF_ITERATIONS;
     int testNumber = TEST_NUMBER;
-    printf("Global 1:%d",global1);
 
     if (argc > 1) {
         numIters = strtoumax(argv[1], NULL, 10);
@@ -71,7 +123,7 @@ void mainBody(int argc, char *argv[])
         printf("Argument[%d] = %s\n", i, argv[i]);
     }
     printf("END: Loop 1 (mainBody)\n");
-
+    global1 = 50;
     printf("BEGIN: Loop 2 (mainBody)\n");
     for (i = 0; i < numIters; i++) {
         printf("BEGIN: Loop 2.1 (mainBody)\n");
@@ -114,7 +166,7 @@ void mainBody(int argc, char *argv[])
             for (int j = 0; j < numIters; ++j) {
                 doSimIteration(numIters, testNumber);
             }
-            printf("BEGIN: Loop 4.1 (mainBody) \n");
+            printf("END: Loop 4.1 (mainBody) \n");
         }
         printf("END: Loop 4 (mainBody) \n");
 
@@ -127,11 +179,10 @@ void mainBody(int argc, char *argv[])
             }
             printf("END: Loop 5.1 (mainBody) \n");
         }
-        printf("BEGIN: Loop 5 (mainBody) \n");
+        printf("END: Loop 5 (mainBody) \n");
 
     }
     printf("END: Function mainBody\n");
-
 
 }
 
@@ -142,29 +193,6 @@ void printFunctionForTesting(const char *args,void* varAdd)
 void printFunctionForTesting2(void* varAdd)
 {
     int *temp = static_cast<int*> (varAdd);
-}
-
-int main(int argc, char *argv[])
-{
-    printf("BEGIN: Function main\n");
-
-#ifdef MT_WITH_MPI
-    MPI_Init(&argc, &argv); /*START MPI */
-#endif
-
-    /*
-     * We kept the entire body of the main in this function.
-     * As a test, if we instrument the "main" at the begin and end, then when the
-     * application runs in MPI mode, instrumentation occurs prior to calling MPI_Init.
-     * This will cause runtime error.
-     */
-    mainBody(argc, argv);
-
-#ifdef MT_WITH_MPI
-    MPI_Finalize();  /* EXIT MPI */
-#endif
-
-    printf("END: Function main\n");
-    return 0;
+    printf("The variable value is %d",*temp);
 }
 

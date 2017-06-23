@@ -137,7 +137,7 @@ void Injector::startInstrumentation(BPatch_addressSpace *app, string strArgv, ve
 
         load = appImage->findFunction(it->function.c_str(), functions, true, true, true);
 
-        ProMon_logger(PROMON_DEBUG, "ProMon Injector: instrumenting %s %s %s ",
+        ProMon_logger(PROMON_DEBUG, "ProMon Injector: instrumenting *function==> %s *position==>%s *name==>%s ",
                       it->function.c_str(), it->position.c_str(), it->name.c_str());
         if (load) {
             ProMon_logger(PROMON_DEBUG, "--->found. total: %d ", functions.size());
