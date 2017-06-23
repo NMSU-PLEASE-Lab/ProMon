@@ -1,0 +1,269 @@
+<?xml version="1.0"?>
+<ProMonLang>
+   <Instrumentation>
+      <Priority>0</Priority>
+      <Mode>TAG_SINGULAR</Mode>
+      <Category>Run</Category>
+      <Function1>input</Function1>
+      <Position1>BEGIN</Position1>
+      <Tag>
+         <TagName>Run</TagName>
+         <Data>miniMD_openmpi</Data>
+      </Tag>
+   </Instrumentation>
+   <Instrumentation>
+      <Priority>0</Priority>
+      <Mode>TAG_DUAL</Mode>
+      <Category>Application</Category>
+      <Function1>input</Function1>
+      <Position1>BEGIN</Position1>
+      <Function2>main</Function2>
+      <Position2>END</Position2>
+      <Tag>
+         <TagName>Application</TagName>
+      </Tag>
+   </Instrumentation>
+   <Instrumentation>
+      <Note>constructing binned neighbor list with Newton's 3rd law for full and half lists</Note>
+      <Priority>0</Priority>
+      <Mode>TAG_DUAL</Mode>
+      <Category>SETUP</Category>
+      <Function1>Neighbor::build</Function1>
+      <Position1>BEGIN</Position1>
+      <Function2>Neighbor::build</Function2>
+      <Position2>END</Position2>
+      <Tag>
+         <TagName>Construct-Bin-Neighbor</TagName>
+      </Tag>
+   </Instrumentation>
+
+<!-- =============L-J============================== -->
+   <Instrumentation>
+      <Note>force calculation using pair-wise forces L-J approximation (encompasses both full and half neighboring)</Note>
+      <Priority>0</Priority>
+      <Mode>TAG_DUAL</Mode>
+      <Category>APPLICATION</Category>
+      <Function1>ForceLJ::compute</Function1>
+      <Position1>BEGIN</Position1>
+      <Function2>ForceLJ::compute</Function2>
+      <Position2>END</Position2>
+      <Tag>
+         <TagName>ForceLJ-Compute</TagName>
+      </Tag>
+   </Instrumentation>
+   <Instrumentation>
+      <Note>details on how time is utilized on the main loops (second loop)</Note>
+      <Priority>0</Priority>
+      <Mode>TAG_DUAL</Mode>
+      <Category>APPLICATION</Category>
+      <Function1>ForceLJ::compute_fullneigh&lt;0&gt;</Function1>
+      <Position1>BEGIN</Position1>
+      <Loop1>2</Loop1>
+      <Function2>ForceLJ::compute_fullneigh&lt;0&gt;</Function2>
+      <Position2>END</Position2>
+      <Loop2>2</Loop2>
+      <Tag>
+         <TagName>Force-LJ-LOOP</TagName>
+      </Tag>
+   </Instrumentation>
+   <Instrumentation>
+      <Note> details on how time is utilized on the main loops (second loop)</Note>
+      <Priority>0</Priority>
+      <Mode>TAG_DUAL</Mode>
+      <Category>APPLICATION</Category>
+      <Function1>ForceLJ::compute_halfneigh&lt;0, 0&gt;</Function1>
+      <Position1>BEGIN</Position1>
+      <Loop1>2</Loop1>
+      <Function2>ForceLJ::compute_halfneigh&lt;0, 0&gt;</Function2>
+      <Position2>END</Position2>
+      <Loop2>2</Loop2>
+      <Tag>
+         <TagName>Force-LJ-LOOP</TagName>
+      </Tag>
+   </Instrumentation>
+
+
+<!-- =============EAM============================== -->
+   <Instrumentation>
+      <Priority>0</Priority>
+      <Note>force calculation using pair-wise forces EAM approximation (encompasses both full and half neighboring)</Note>
+      <Mode>TAG_DUAL</Mode>
+      <Category>APPLICATION</Category>
+      <Function1>ForceEAM::compute</Function1>
+      <Position1>BEGIN</Position1>
+      <Function2>ForceEAM::compute</Function2>
+      <Position2>END</Position2>
+      <Tag>
+         <TagName>ForceEAM-Compute</TagName>
+      </Tag>
+   </Instrumentation>
+   <Instrumentation>
+      <Note>details on how time is utilized on the main loops (second loop)</Note>
+      <Priority>0</Priority>
+      <Mode>TAG_DUAL</Mode>
+      <Category>APPLICATION</Category>
+      <Function1>ForceEAM::compute_fullneigh</Function1>
+      <Position1>BEGIN</Position1>
+      <Loop1>2</Loop1>
+      <Function2>ForceEAM::compute_fullneigh</Function2>
+      <Position2>END</Position2>
+      <Loop2>2</Loop2>
+      <Tag>
+         <TagName>Force-EAM-LOOP</TagName>
+      </Tag>
+   </Instrumentation>
+   <Instrumentation>
+      <Note> details on how time is utilized on the main loops (fifth loop)</Note>
+      <Priority>0</Priority>
+      <Mode>TAG_DUAL</Mode>
+      <Category>APPLICATION</Category>
+      <Function1>ForceEAM::compute_halfneigh</Function1>
+      <Position1>BEGIN</Position1>
+      <Loop1>5</Loop1>
+      <Function2>ForceEAM::compute_halfneigh</Function2>
+      <Position2>END</Position2>
+      <Loop2>5</Loop2>
+      <Tag>
+         <TagName>Force-EAM-LOOP</TagName>
+      </Tag>
+   </Instrumentation>
+
+<!-- ================================================ -->
+
+   <!-- -mavx (auto Vectorization) -fopenmp (openMP threading)issue -->
+   <Instrumentation>
+      <Note>creating the spatial decomposition model (setup)</Note>
+      <Priority>0</Priority>
+      <Mode>TAG_DUAL</Mode>
+      <Category>SETUP</Category>
+      <Function1>Comm::setup</Function1>
+      <Position1>BEGIN</Position1>
+      <Function2>Integrate::setup</Function2>
+      <Position2>END</Position2>
+      <Tag>
+         <TagName>Create-Spatial-Decom</TagName>
+      </Tag>
+   </Instrumentation>
+   <Instrumentation>
+      <Note>create atoms</Note>
+      <Priority>0</Priority>
+      <Mode>TAG_DUAL</Mode>
+      <Category>SETUP</Category>
+      <Function1>create_atoms</Function1>
+      <BasicBlock1>1</BasicBlock1>
+      <Position1>BEGIN</Position1>
+      <Function2>create_atoms</Function2>
+      <Position2>END</Position2>
+      <Tag>
+         <TagName>Create_atoms</TagName>
+      </Tag>
+   </Instrumentation>
+   
+   <!-- -mavx (auto Vectorization) -fopenmp (openMP threading)issue -->
+   <Instrumentation>
+      <Note>create velocity and velocity adjustment</Note>
+      <Priority>0</Priority>
+      <Mode>TAG_DUAL</Mode>
+      <Category>SETUP</Category>
+      <Function1>create_velocity</Function1>
+      <Position1>BEGIN</Position1>
+      <Function2>create_velocity</Function2>
+      <Position2>END</Position2>
+      <Tag>
+         <TagName>Create_velocity_ajust</TagName>
+      </Tag>
+   </Instrumentation>
+
+   <Instrumentation>
+      <Note>Derivative communication of embedding function</Note>
+      <Priority>0</Priority>
+      <Mode>TAG_DUAL</Mode>
+      <Category>APPLICATION</Category>
+      <Function1>Comm::reverse_communicate</Function1>
+      <Position1>BEGIN</Position1>
+      <Function2>Comm::reverse_communicate</Function2>
+      <Position2>END</Position2>
+      <Tag>
+         <TagName>Atom-Communication</TagName>
+      </Tag>
+   </Instrumentation>
+   <Instrumentation>
+      <Priority>0</Priority>
+      <Mode>TAG_DUAL</Mode>
+      <Category>APPLICATION</Category>
+      <Function1>Comm::communicate</Function1>
+      <Position1>BEGIN</Position1>
+      <Function2>Comm::communicate</Function2>
+      <Position2>BEGIN</Position2>
+      <Tag>
+         <TagName>Atom-Communication</TagName>
+      </Tag>
+   </Instrumentation>
+   <Instrumentation>
+      <Note>moving atoms to correct sub-boxes (Atom exchanging)</Note>
+      <Priority>0</Priority>
+      <Mode>TAG_DUAL</Mode>
+      <Category>APPLICATION</Category>
+      <Function1>Comm::exchange</Function1>
+      <Position1>BEGIN</Position1>
+      <Function2>Comm::exchange</Function2>
+      <Position2>END</Position2>
+      <Tag>
+         <TagName>AtomExchange</TagName>
+      </Tag>
+   </Instrumentation>
+
+   <!-- -mavx (auto Vectorization) -fopenmp (openMP threading)issue -->
+   <Instrumentation>
+      <Priority>0</Priority>
+      <Mode>TAG_DUAL</Mode>
+      <Category>APPLICATION</Category>
+      <Function1>Integrate::run</Function1>
+      <Position1>BEGIN</Position1>
+      <Function2>Integrate::run</Function2>
+      <Position2>END</Position2>
+      <Tag>
+         <TagName>Atom-Integration</TagName>
+      </Tag>
+   </Instrumentation>
+
+   <Instrumentation>
+      <Note>Productive I/O read lammp file</Note>
+      <Priority>0</Priority>
+      <Mode>TAG_DUAL</Mode>
+      <Category>IO</Category>
+      <Function1>read_lammps_data</Function1>
+      <Position1>BEGIN</Position1>
+      <Function2>read_lammps_data</Function2>
+      <Position2>END</Position2>
+      <Tag>
+         <TagName>ProductiveIO-Setup-ReadLammp</TagName>
+      </Tag>
+   </Instrumentation>
+   <Instrumentation>
+      <Priority>0</Priority>
+      <Mode>TAG_DUAL</Mode>
+      <Category>Application</Category>
+      <Function1>Thermo::compute</Function1>
+      <Position1>BEGIN</Position1>
+      <Function2>Thermo::compute</Function2>
+      <Position2>END</Position2>
+      <!-- Put this when you want to run in openMP and auto vectoring <BasicBlock2>4</BasicBlock2> -->
+      <Tag>
+         <TagName>Computatioin-Thermo</TagName>
+      </Tag>
+   </Instrumentation>
+
+   <!-- Monitoring indicators -->
+   <!-- -mavx (auto Vectorization) -fopenmp (openMP threading)issue -->
+   <Instrumentation>
+      <Priority>0</Priority>
+      <Mode>TAG_SINGULAR</Mode>
+      <Category>Step</Category>
+      <Function1>Thermo::compute</Function1>
+      <Position1>BEGIN</Position1>
+      <Tag>
+         <TagName>Heartbeat</TagName>
+      </Tag>
+   </Instrumentation>
+</ProMonLang>

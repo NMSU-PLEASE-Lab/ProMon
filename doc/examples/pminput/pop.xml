@@ -1,0 +1,153 @@
+<?xml version="1.0"?>
+<ProMonLang>
+   <Instrumentation>
+      <Priority>0</Priority>
+      <Mode>TAG_SINGULAR</Mode>
+      <Category>Run</Category>
+      <Function1>__initial_MOD_initialize_pop</Function1>
+      <Position1>END</Position1>
+      <Tag>
+         <TagName>Run</TagName>
+         <Data>pop</Data>
+      </Tag>
+   </Instrumentation>
+   <Instrumentation>
+      <Priority>0</Priority>
+      <Mode>TAG_DUAL</Mode>
+      <Category>Application</Category>
+      <Function1>__initial_MOD_initialize_pop</Function1>
+      <Position1>END</Position1>
+      <Function2>__exit_mod_MOD_exit_pop</Function2>
+      <Position2>BEGIN</Position2>
+      <Tag>
+         <TagName>Application</TagName>
+      </Tag>
+   </Instrumentation>
+   <Instrumentation>
+      <Note>initializing the model run</Note>
+      <Priority>0</Priority>
+      <Mode>TAG_DUAL</Mode>
+      <Category>SETUP</Category>
+      <Function1>__io_types_MOD_init_io</Function1>
+      <Position1>BEGIN</Position1>
+      <Function2>__xdisplay_MOD_init_xdisplay</Function2>
+      <Position2>END</Position2>
+      <Tag>
+         <TagName>Setup-IO</TagName>
+      </Tag>
+   </Instrumentation>
+   <Instrumentation>
+      <Priority>0</Priority>
+      <Mode>TAG_SINGULAR</Mode>
+      <Category>STEP</Category>
+      <Function1>__step_mod_MOD_step</Function1>
+      <Position1>BEGIN</Position1>
+      <Tag>
+         <TagName>Heartbeat</TagName>
+      </Tag>
+   </Instrumentation>
+   <Instrumentation>
+      <Priority>0</Priority>
+      <Mode>TAG_DUAL</Mode>
+      <Category>APPLICATION</Category>
+      <Function1>__step_mod_MOD_step</Function1>
+      <Position1>BEGIN</Position1>
+      <Function2>__step_mod_MOD_step</Function2>
+      <Position2>END</Position2>
+      <Tag>
+         <TagName>Steps</TagName>
+      </Tag>
+   </Instrumentation>
+   <Instrumentation>
+      <Priority>0</Priority>
+      <Mode>TAG_DUAL</Mode>
+      <Category>APPLICATION</Category>
+      <Function1>__forcing_MOD_set_surface_forcing</Function1>
+      <Position1>BEGIN</Position1>
+      <Function2>__forcing_MOD_set_surface_forcing</Function2>
+      <Position2>END</Position2>
+      <Tag>
+         <TagName>SurfaceForcing</TagName>
+      </Tag>
+   </Instrumentation>
+   <Instrumentation>
+   <Note>calculating the change in surface height dh/dt from surface pressure</Note> 
+      <Priority>0</Priority>
+      <Mode>TAG_DUAL</Mode>
+      <Category>APPLICATION</Category>
+      <Function1>__surface_hgt_MOD_dhdt</Function1>
+      <Position1>BEGIN</Position1>
+      <Function2>__surface_hgt_MOD_dhdt</Function2>
+      <Position2>END</Position2>
+      <Tag>
+         <TagName>dhdt</TagName>
+      </Tag>
+   </Instrumentation>
+   <Instrumentation>
+      <Note>solving barotropic equations to find surface pressure and barotropic velocities</Note>
+      <Priority>0</Priority>
+      <Mode>TAG_DUAL</Mode>
+      <Category>IO</Category>
+      <Function1>__baroclinic_MOD_baroclinic_driver</Function1>
+      <Position1>BEGIN</Position1>
+      <Function2>__baroclinic_MOD_baroclinic_driver</Function2>
+      <Position2>END</Position2>
+      <Tag>
+         <TagName>BaroclinicIntegration</TagName>
+      </Tag>
+   </Instrumentation>
+
+   <Instrumentation>
+      <Note>computing global diagnostics for all steps</Note>
+      <Priority>0</Priority>
+      <Mode>TAG_DUAL</Mode>
+      <Category>APPLICATION</Category>
+      <Function1>__tavg_MOD_define_tavg_field</Function1>
+      <Position1>BEGIN</Position1>
+      <Function2>__tavg_MOD_define_tavg_field</Function2>
+      <Position2>END</Position2>
+      <Tag>
+         <TagName>DefineTavgField</TagName>
+      </Tag>
+   </Instrumentation>
+   <Instrumentation>
+      <Priority>0</Priority>
+      <Mode>TAG_DUAL</Mode>
+      <Category>IO</Category>
+      <Function1>__timers_MOD_timer_print_all</Function1>
+      <Position1>BEGIN</Position1>
+      <Function2>__timers_MOD_timer_print_all</Function2>
+      <Position2>END</Position2>
+      <Tag>
+         <TagName>IO-Print</TagName>
+      </Tag>
+   </Instrumentation>
+   <Instrumentation>
+      <Priority>0</Priority>
+      <Mode>DATA_ACCESS</Mode>
+      <Category>Application</Category>
+      <Function1>__step_mod_MOD_step</Function1>
+      <Position1>END</Position1>
+      <VariableType>int</VariableType>
+      <VariableName>timer_baroclinic.1902</VariableName>
+   </Instrumentation>
+   <Instrumentation>
+      <Priority>0</Priority>
+      <Mode>DATA_ACCESS</Mode>
+      <Category>Application</Category>
+      <Function1>__step_mod_MOD_step</Function1>
+      <Position1>END</Position1>
+      <VariableType>int</VariableType>
+      <VariableName>timer_barotropic.1903</VariableName>
+   </Instrumentation>
+   <!-- There are more procedure to instrument but I will not make a big 
+      mess here <Instrumentation> <Priority>0</Priority> <Mode>TAG_DUAL</Mode> 
+      <Category>APPLICATION</Category> <Function1>__boundary_MOD_boundary_2d_dbl</Function1> 
+      <Position1>BEGIN</Position1> <Function2>__boundary_MOD_boundary_2d_dbl</Function2> 
+      <Position2>END</Position2> <Tag> <TagName>UpdateGhostCells</TagName> </Tag> 
+      </Instrumentation> ! -->
+   <!-- <Instrumentation> <Priority>0</Priority> <Mode>TAG_DUAL</Mode> <Category>APPLICATION</Category> 
+      <Function1>__tavg_MOD_tavg_set_flag</Function1> <Position1>BEGIN</Position1> 
+      <Function2>__forcing_MOD_tavg_forcing</Function2> <Position2>END</Position2> 
+      <Tag> <TagName>TimeAnalysis</TagName> </Tag> </Instrumentation> -->
+</ProMonLang>

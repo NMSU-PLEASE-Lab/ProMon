@@ -1,0 +1,77 @@
+This is an instruction to prepare three nodes with names hadi[0-1-2] as testbed for ProMon experiment.
+Make sure all of them are updated 
+	sudo apt-get update
+
+installing C++
+	sudo apt-get install gcc g++ 
+	sudo apt-get install libelf-dev
+
+installing MPI
+	sudo apt-get install libopenmpi-dev openmpi-bin openmpi-doc
+	sudo apt-get install  lam-runtime lam4-dev lam-mpidoc
+
+Add the host name to /etc/hosts
+	192.168.0.110 hadi0
+	192.168.0.111 hadi1
+	192.168.0.112 hadi2
+
+ssh without password:
+on hadi0
+	ssh-keygen
+	ssh-copy-id -i ~/.ssh/id_rsa.pub hadi1 
+	ssh-copy-id -i ~/.ssh/id_rsa.pub hadi2
+
+I did ran the same commands for other nodes.
+
+Sharing home directory:
+Installing NFS server on hadi0:
+	sudo apt-get install nfs-kernel-server nfs-common portmap
+add this code to /etc/exports
+	/home/hsharifi  *(rw,no_root_squash,async)
+
+Installing NFS client hadi1 and hadi2:
+	sudo apt-get install portmap nfs-common 
+	sudo mount hadi0:/home/hsharifi /home/hsharifi
+	sudo vi /etc/fstab  (add this line)
+	hadi0:/home/hsharifi /home/hsharifi nfs rsize=8192,wsize=8192,timeo=14,intr
+
+Prerequisite for Slurm:
+	sudo apt-get install libboost-dev
+
+Installing munge (prerequisite for slurm next) 
+first munge to be installed. installing MUNGE on all nodes
+	sudo apt-get install munge
+create munge key
+	sudo /usr/sbin/create-munge-key
+copy the key to all nodes
+	sudo scp /etc/munge/munge.key hsharifi@hadi[1-2]:~/
+Make sure that the key is owned by linux user munge that is created by munge.
+	sudo chmod 0400 /etc/munge/munge.key
+	sudo chown munge:munge /etc/munge/munge.key
+
+Just restart the station and it should be running. if not try start munge by
+	sudo /etc/init.d/munge start
+
+For testing check the website (above)
+http://code.google.com/p/munge/wiki/InstallationGuide
+
+Install Slurm
+	sudo apt-get install slurm-llnl
+	sudo apt-get install slurm-llnl-slurmdbd
+
+creating the slurm.conf:
+	sudo nano /etc/slurm-llnl/slurm.conf
+
+use the https://computing.llnl.gov/linux/slurm/configurator.html to generate the needed data for slurm.conf file
+paste it in the slurm.conf
+
+if you restart the station, all deamons should run automatically. If not run deamons:
+	sudo slurmctld (on hadi0)
+	sudo slurmd (on hadi0-2)
+
+Utility to use the extended file system.
+	sudo apt-get install attr
+
+Add ",user_xattr" (" is not included) to fstab to /dev/sda1 file systems
+sudo vim /etc/fstab 
+
