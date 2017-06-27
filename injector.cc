@@ -69,7 +69,7 @@ void Injector::startInstrumentation(BPatch_addressSpace *app, string strArgv, ve
     bool load = false;
     std::vector < BPatch_function * > functions;
     std::vector < BPatch_function * > probeFunctions;
-    std::vector < BPatch_point * > *points;
+    std::vector < BPatch_point * > *points = NULL;
     BPatch_image *appImage = app->getImage();
 
     /*
@@ -126,8 +126,7 @@ void Injector::startInstrumentation(BPatch_addressSpace *app, string strArgv, ve
      * all records are provided to injector by getRecord() function.
      *
      */
-    for (vector<instRecord>::iterator it = arrangedrecs.begin();
-         it != arrangedrecs.end(); ++it) {
+    for (vector<instRecord>::iterator it = arrangedrecs.begin(); it != arrangedrecs.end(); ++it) {
 
         /*
          * Find the function in the running application.
@@ -172,8 +171,27 @@ void Injector::startInstrumentation(BPatch_addressSpace *app, string strArgv, ve
         BPatch_Vector < BPatch_snippet * > args; //contains all the parameters
         BPatch_constExpr prgArgs(strArgv.c_str()); //arg parameter for probe function
         args.push_back(&prgArgs);
-        BPatch_constExpr tag(it->name.c_str()); //first parameter (common)
-        args.push_back(&tag);
+
+        BPatch_constExpr recordName(it->name.c_str()); //name
+        args.push_back(&recordName);
+
+        BPatch_constExpr recordType(it->type.c_str()); //type
+        args.push_back(&recordType);
+
+        BPatch_constExpr recordCategory(it->category.c_str()); //category
+        args.push_back(&recordCategory);
+
+        BPatch_constExpr recordPriority(it->priority); //priority
+        args.push_back(&recordPriority);
+
+        BPatch_constExpr recordPosition(it->position.c_str()); //position
+        args.push_back(&recordPosition);
+
+        BPatch_constExpr samplingRate(it->samplingRate); //sampling rate
+        args.push_back(&recordPosition);
+
+
+
         ProMon_logger(PROMON_DEBUG, "prgargs: %s, tag:%s",
                       strArgv.c_str(), it->name.c_str());
 
@@ -319,7 +337,8 @@ void Injector::startInstrumentation(BPatch_addressSpace *app, string strArgv, ve
 
         /* Clear the list of points before going to next loop
          */
-        points->clear();
+        if (points != NULL)
+            points->clear();
 
         /*
          * We may have created the second parameter for probe function.
@@ -327,6 +346,7 @@ void Injector::startInstrumentation(BPatch_addressSpace *app, string strArgv, ve
          */
         if (secondParam != NULL)
             delete secondParam;
+
     }
 }
 

@@ -53,7 +53,21 @@ struct LogItem
     */
    int analyzerCount; 
 };
-
+struct  eventRecord
+{
+    long timeSec;
+    long timeNanoSec;
+    int rank;
+    string jobId;
+    string username;
+    string jobMS;
+    string eventType;
+    string eventName;
+    string eventPosition;
+    string eventCount;
+    string eventCategory;
+    string eventVarValue;
+};
 struct ApplicationDetails
 {
    /*

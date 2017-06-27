@@ -34,15 +34,15 @@ void serverEPoll::handleBuffer(int descriptor, const char* buffer)
    string strRecords = desRecords[descriptor];
 
    /*
-    * Records should not have any new line character 
+    * Records should not have any new line character
     */
-   string::size_type pos = 0; 
+   string::size_type pos = 0;
    while ( ( pos = strRecords.find ("\n",pos) ) != string::npos )
    {
       strRecords.erase ( pos, 2 );
    }
-  
-   /* split is defined on top */ 
+
+   /* split is defined on top */
    splitRecs = split(strRecords, " ");
    for(vector<string>::iterator it = splitRecs.begin(); it != splitRecs.end(); it++)
    {
@@ -55,7 +55,7 @@ void serverEPoll::handleBuffer(int descriptor, const char* buffer)
          strRecords = temp;
       else
       {
-         temp[temp.size()-1]='\0';   
+         temp[temp.size()-1]='\0';
          strRecords.clear();
 
          ProMon_logger(PROMON_DEBUG, "ProMon SERVEREPOLL: %s", temp.c_str());
@@ -156,7 +156,7 @@ int serverEPoll::start()
    struct epoll_event *events;
    char portTemp[BUF_SIZE];
 
-   sprintf(portTemp, "%d", port); 
+   sprintf(portTemp, "%d", port);
 
    sfd = create_and_bind (portTemp);
    if (sfd == -1)
@@ -198,9 +198,13 @@ int serverEPoll::start()
       int n, i;
 
       n = epoll_wait (efd, events, MAXEVENTS, -1);
+       printf("hello0");
       for (i = 0; i < n; i++)
       {
-         if ((events[i].events & EPOLLERR) ||
+
+          printf("hello0.1");
+
+          if ((events[i].events & EPOLLERR) ||
                (events[i].events & EPOLLHUP) ||
                (!(events[i].events & EPOLLIN)))
          {
@@ -221,12 +225,13 @@ int serverEPoll::start()
                socklen_t in_len;
                int infd;
                char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
-
                in_len = sizeof(in_addr);
                infd = accept (sfd, &in_addr, &in_len);
+
                if (infd == -1)
                {
-                  if ((errno == EAGAIN) ||
+
+                   if ((errno == EAGAIN) ||
                         (errno == EWOULDBLOCK))
                   {
                      /* We have processed all incoming
@@ -238,8 +243,8 @@ int serverEPoll::start()
                      ProMon_logger(PROMON_ERROR, "ProMon SERVEREPOLL accept!");
                      break;
                   }
-               }
 
+               }
                s = getnameinfo (&in_addr, in_len,
                      hbuf, sizeof(hbuf),
                      sbuf, sizeof(sbuf),
@@ -249,13 +254,11 @@ int serverEPoll::start()
                   ProMon_logger(PROMON_DEBUG, "ProMon SERVEREPOLL: Accepted connection on descriptor %d "
                         "(host=%s, port=%s)", infd, hbuf, sbuf);
                }
-
                /* Make the incoming socket non-blocking and add it to the
                   list of fds to monitor. */
                s = make_socket_non_blocking (infd);
                if (s == -1)
                   abort ();
-
                event.data.fd = infd;
                event.events = EPOLLIN | EPOLLET;
                s = epoll_ctl (efd, EPOLL_CTL_ADD, infd, &event);
@@ -275,21 +278,22 @@ int serverEPoll::start()
                and won't get a notification again for the same
                data. */
             int done = 0;
-
             while (1)
             {
-               ssize_t count;
-               char buf[BUF_SIZE];
+                ssize_t count;
+                char buffer[1024];
 
                /*
                 * we need to make sure all elements are zero.
                 * Some compilers version does not initialize it with zero.
                 * Some does not clear it.
                 */
-               memset(buf, 0, sizeof buf);
+               memset(buffer, 0, sizeof(buffer)  );
 
-               count = read (events[i].data.fd, buf, sizeof(buf)-1);
-               if (count == -1)
+                count = read (events[i].data.fd, &buffer, sizeof(buffer)-1);
+               cout<<"Received bytes:"<<count;
+
+                if (count == -1)
                {
                   /* If errno == EAGAIN, that means we have read all
                      data. So go back to the main loop. */
@@ -298,7 +302,7 @@ int serverEPoll::start()
                      ProMon_logger(PROMON_ERROR, "ProMon SERVEREPOLL read!");
                      done = 1;
                   }
-                  break; 
+                  break;
                }
                else if (count == 0)
                {
@@ -307,20 +311,21 @@ int serverEPoll::start()
                   done = 1;
                   break;
                }
-
-               buf[sizeof(buf)-1]='\0';
-               handleBuffer(events[i].data.fd, buf);
+//               buf[sizeof(buf)-1]='\0';
+//               handleBuffer(events[i].data.fd, record);
 
                /* Keep the rank and job id to clean up in case the monitored application crashes. */
-               if(rank_jobids.find(events[i].data.fd) == rank_jobids.end())
-               {
-                  char *rank, *job_id;
-                  rank = strtok(buf, ";");
-                  strtok(NULL, ";"); //username, no need here.
-                  strtok(NULL, ";"); //jobMS, no need here.
-                  job_id = strtok(NULL, ";");
-                  rank_jobids[events[i].data.fd] = string(rank)+":"+string(job_id);
-               }
+//               if(rank_jobids.find(events[i].data.fd) == rank_jobids.end())
+//               {
+//                  char *rank, *job_id;
+//                  rank = strtok(buf, ";");
+//                  strtok(NULL, ";"); //username, no need here.
+//                  strtok(NULL, ";"); //jobMS, no need here.
+//                  job_id = strtok(NULL, ";");
+//                  rank_jobids[events[i].data.fd] = string(rank)+":"+string(job_id);
+//               }
+                printf("hello4\n");
+
             }
 
             if (done)
@@ -331,15 +336,15 @@ int serverEPoll::start()
                /* Closing the descriptor will make epoll remove it
                   from the set of descriptors which are monitored. */
                close (events[i].data.fd);
-               /* delete the recrod related to this descriptor to handle partial messages */  
+               /* delete the recrod related to this descriptor to handle partial messages */
                desRecords.erase(events[i].data.fd);
- 
+
                /* Clean up resources in analyzer */
                string temp = rank_jobids[events[i].data.fd];
                char * buf = new char [temp.length()+1];
                strcpy (buf, temp.c_str());
                char *rank = strtok(buf, ":");
-               char *job_id = strtok(NULL, ":"); 
+               char *job_id = strtok(NULL, ":");
                ProMon_logger(PROMON_DEBUG,"ProMon SERVEREPOLL: Cleaning resources for %s:%s!", job_id, rank);
                Analyzer::sumup_clean_static(rank, job_id);
                rank_jobids.erase(events[i].data.fd);

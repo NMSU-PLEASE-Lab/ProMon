@@ -42,5 +42,8 @@ cmake . -DCMAKE_INSTALL_PREFIX=/home/ujjwal/Build/DyninstAPI-9.3.2 -DBoost_INCLU
 make
 make install
 
+Installation of msgpack: 2.1.3
+
+
 
 
