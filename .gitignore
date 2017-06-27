@@ -1,0 +1,15 @@
+.idea
+CMakeLists.txt
+cmake-build-debug
+dimin
+hostfiles
+dimin
+*.o
+lib/
+pmlogs/
+*.log
+promon_analyzer
+promon_injector
+promon_report
+*.so*
+
