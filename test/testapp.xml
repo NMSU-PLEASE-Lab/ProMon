@@ -54,10 +54,7 @@
             <Function>mainBody</Function>
             <Position>BEGIN</Position>
         </Point>
-        <EndPoint>
-            <Function>mainBody</Function>
-            <Position>END</Position>
-        </EndPoint>
+
     </MonElement>
 
     <MonElement>
