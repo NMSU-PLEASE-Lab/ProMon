@@ -15,6 +15,8 @@
 #include "analyzer.h"
 #include "util.h"
 #include "server.h"
+#include <msgpack.h>
+
 using namespace std;
 
 class serverEPoll : public server {

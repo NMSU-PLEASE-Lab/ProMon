@@ -98,7 +98,7 @@ int serverEPoll::make_socket_non_blocking (int sfd)
 }
 
 /*
- * This function uses a standard code block for a portable way of getting a IPv4 or IPv6 socket. 
+ * This function uses a standard code block for a portable way of getting a IPv4 or IPv6 socket.
  */
 int serverEPoll::create_and_bind (char *port)
 {
@@ -198,13 +198,9 @@ int serverEPoll::start()
       int n, i;
 
       n = epoll_wait (efd, events, MAXEVENTS, -1);
-       printf("hello0");
       for (i = 0; i < n; i++)
       {
-
-          printf("hello0.1");
-
-          if ((events[i].events & EPOLLERR) ||
+         if ((events[i].events & EPOLLERR) ||
                (events[i].events & EPOLLHUP) ||
                (!(events[i].events & EPOLLIN)))
          {
@@ -225,13 +221,12 @@ int serverEPoll::start()
                socklen_t in_len;
                int infd;
                char hbuf[NI_MAXHOST], sbuf[NI_MAXSERV];
+
                in_len = sizeof(in_addr);
                infd = accept (sfd, &in_addr, &in_len);
-
                if (infd == -1)
                {
-
-                   if ((errno == EAGAIN) ||
+                  if ((errno == EAGAIN) ||
                         (errno == EWOULDBLOCK))
                   {
                      /* We have processed all incoming
@@ -243,8 +238,8 @@ int serverEPoll::start()
                      ProMon_logger(PROMON_ERROR, "ProMon SERVEREPOLL accept!");
                      break;
                   }
-
                }
+
                s = getnameinfo (&in_addr, in_len,
                      hbuf, sizeof(hbuf),
                      sbuf, sizeof(sbuf),
@@ -254,11 +249,13 @@ int serverEPoll::start()
                   ProMon_logger(PROMON_DEBUG, "ProMon SERVEREPOLL: Accepted connection on descriptor %d "
                         "(host=%s, port=%s)", infd, hbuf, sbuf);
                }
+
                /* Make the incoming socket non-blocking and add it to the
                   list of fds to monitor. */
                s = make_socket_non_blocking (infd);
                if (s == -1)
                   abort ();
+
                event.data.fd = infd;
                event.events = EPOLLIN | EPOLLET;
                s = epoll_ctl (efd, EPOLL_CTL_ADD, infd, &event);
@@ -278,22 +275,36 @@ int serverEPoll::start()
                and won't get a notification again for the same
                data. */
             int done = 0;
+
             while (1)
             {
-                ssize_t count;
-                char buffer[1024];
+               ssize_t count;
+               char buf[BUF_SIZE];
+//                msgpack_sbuffer* buffer = msgpack_sbuffer_new();
+//
+//               /*
+//                * we need to make sure all elements are zero.
+//                * Some compilers version does not initialize it with zero.
+//                * Some does not clear it.
+//                */
+               memset(buf, 0, sizeof buf);
 
-               /*
-                * we need to make sure all elements are zero.
-                * Some compilers version does not initialize it with zero.
-                * Some does not clear it.
-                */
-               memset(buffer, 0, sizeof(buffer)  );
+               count = read (0, buf, sizeof buf -1);
+               cout<<"count:"<<buf;
 
-                count = read (events[i].data.fd, &buffer, sizeof(buffer)-1);
-               cout<<"Received bytes:"<<count;
+//                /* deserializes it. */
+//                msgpack_unpacked msg;
+//                msgpack_unpacked_init(&msg);
+//                bool success = msgpack_unpack_next(&msg, buffer->data, buffer->size, NULL);
+//
+//                /* prints the deserialized object. */
+//                msgpack_object obj = msg.data;
+//                msgpack_object_print(stdout, obj);  /*=> ["Hello", "MessagePack"] */
+//
+//                /* cleaning */
+//                msgpack_sbuffer_free(buffer);
 
-                if (count == -1)
+               if (count == -1)
                {
                   /* If errno == EAGAIN, that means we have read all
                      data. So go back to the main loop. */
@@ -311,21 +322,20 @@ int serverEPoll::start()
                   done = 1;
                   break;
                }
-//               buf[sizeof(buf)-1]='\0';
-//               handleBuffer(events[i].data.fd, record);
+
+               buf[sizeof(buf)-1]='\0';
+               handleBuffer(events[i].data.fd, buf);
 
                /* Keep the rank and job id to clean up in case the monitored application crashes. */
-//               if(rank_jobids.find(events[i].data.fd) == rank_jobids.end())
-//               {
-//                  char *rank, *job_id;
-//                  rank = strtok(buf, ";");
-//                  strtok(NULL, ";"); //username, no need here.
-//                  strtok(NULL, ";"); //jobMS, no need here.
-//                  job_id = strtok(NULL, ";");
-//                  rank_jobids[events[i].data.fd] = string(rank)+":"+string(job_id);
-//               }
-                printf("hello4\n");
-
+               if(rank_jobids.find(events[i].data.fd) == rank_jobids.end())
+               {
+                  char *rank, *job_id;
+                  rank = strtok(buf, ";");
+                  strtok(NULL, ";"); //username, no need here.
+                  strtok(NULL, ";"); //jobMS, no need here.
+                  job_id = strtok(NULL, ";");
+                  rank_jobids[events[i].data.fd] = string(rank)+":"+string(job_id);
+               }
             }
 
             if (done)
