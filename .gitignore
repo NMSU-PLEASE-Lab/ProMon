@@ -12,4 +12,4 @@ promon_analyzer
 promon_injector
 promon_report
 *.so*
-
+*.promon
