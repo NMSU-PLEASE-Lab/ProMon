@@ -35,13 +35,30 @@ void serverEPoll::handleBuffer(int descriptor, const char *buffer)
     desRecords[descriptor] += buffer;
     string strRecords = desRecords[descriptor];
 
-    /*
-     * Records should not have any new line character
-     */
-    string::size_type pos = 0;
-    while ((pos = strRecords.find("\n", pos)) != string::npos) {
-        strRecords.erase(pos, 2);
+    msgpack_unpacked result;
+    size_t off = 0;
+    msgpack_unpack_return ret;
+    int MIN_EVENT_BUFFER_SIZE = 40;
+
+    msgpack_unpacked_init(&result);
+    /* unpack recieved buffer into msgpack object */
+    size_t recv_size = 50;
+    ret = msgpack_unpack_next(&result, buffer, MIN_EVENT_BUFFER_SIZE, &off);
+    while (ret == MSGPACK_UNPACK_SUCCESS) {
+        msgpack_object obj = result.data;
+        char *unpacked_buffer = new char[off+1];
+        unpacked_buffer[off] = '\0';
+        msgpack_object_print_buffer(unpacked_buffer, off, obj);
+        cout<<unpacked_buffer;
+        ret = msgpack_unpack_next(&result, buffer, MIN_EVENT_BUFFER_SIZE, &off);
     }
+
+    if (ret == MSGPACK_UNPACK_PARSE_ERROR) {
+        printf("The data in the buf is invalid format.\n");
+    }
+
+    msgpack_unpacked_destroy(&result);
+
 
     /* split is defined on top */
     splitRecs = split(strRecords, " ");
@@ -70,27 +87,7 @@ void serverEPoll::handleBuffer(int descriptor, const char *buffer)
     desRecords[descriptor] = strRecords;
 
 
-    /* unpack recieved buffer into msgpack object */
-    msgpack_unpacked result;
-    size_t off = 0;
-    msgpack_unpack_return ret;
-    char unpacked_buffer[2046];
-    msgpack_unpacked_init(&result);
-    size_t recv_size = count == -1 ? sizeof(buf) - 1 : (size_t) count;
 
-    ret = msgpack_unpack_next(&result, buf, recv_size, &off);
-    while (ret == MSGPACK_UNPACK_SUCCESS) {
-        msgpack_object obj = result.data;
-        msgpack_object_print_buffer(unpacked_buffer, 2046, obj);
-        printf("%s\n", unpacked_buffer);
-        ret = msgpack_unpack_next(&result, buf, recv_size, &off);
-    }
-
-    if (ret == MSGPACK_UNPACK_PARSE_ERROR) {
-        printf("The data in the buf is invalid format.\n");
-    }
-
-    msgpack_unpacked_destroy(&result);
 
 }
 
@@ -277,7 +274,7 @@ int serverEPoll::start()
 
                 while (1) {
                     ssize_t count;
-                    char buf[BUF_SIZE];
+                    char buf[120];
 
                     /*
                      * we need to make sure all elements are zero.
@@ -286,26 +283,24 @@ int serverEPoll::start()
                      */
                     memset(buf, 0, sizeof buf);
                     count = read(events[i].data.fd, buf, sizeof(buf) - 1);
+                    cout<<"Count is:"<<count<<"\n";
 
                     if (count == 0) {
                         /* End of file. The remote has closed the
                            connection. */
                         done = 1;
                         break;
-                    } else if (count == -1 && errno == EAGAIN) {
-                        continue;
+                    } else if (count == -1) {
+                        if (errno != EAGAIN)
+                        {
+                            ProMon_logger(PROMON_ERROR, "ProMon SERVEREPOLL  read!");
+                            done = 1;
+                        }
+                        break;
                     }
-
-
 
                     buf[sizeof(buf) - 1] = '\0';
                     handleBuffer(events[i].data.fd, buf);
-
-                    if (count == -1) {
-                        ProMon_logger(PROMON_ERROR, "ProMon SERVEREPOLL  read!");
-                        done = 1;
-                        break;
-                    }
 
 
                     /* Keep the rank and job id to clean up in case the monitored application crashes. */
@@ -318,6 +313,7 @@ int serverEPoll::start()
 //                        rank_jobids[events[i].data.fd] = string(rank) + ":" + string(job_id);
 //                    }
                 }
+
 
                 if (done) {
                     ProMon_logger(PROMON_DEBUG, "ProMon SERVEREPOLL: Closed connection on descriptor %d",
