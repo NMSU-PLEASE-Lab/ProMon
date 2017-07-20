@@ -172,22 +172,8 @@ void Parser::monElement(TiXmlElement *pElem, instRecord *record1,
      */
     if (record1->programmable && record2->programmable) {
         record1->name = record1->name + PROGRAMMABLE;
-        record2->name = record1->name + PROGRAMMABLE;
+        record2->name = record2->name + PROGRAMMABLE;
     }
-
-
-
-    /* All needed values are available.
-//     * The event name that is passed to Injector will be in either these formats:
-//     * SamplingRate:Priority:Category:name or
-//     * SamplingRate:Priority:Category:DATA_ACCESS:Type:Name:varType (varType is added in the variable function)
-//     */
-//    record1->name = static_cast<ostringstream *> (&(ostringstream() << record1->samplingRate))->str() + ":"
-//        + static_cast<ostringstream *> (&(ostringstream() << record1->priority))->str() + ":"
-//        + record1->category + ":" + record1->name;
-//    record2->name = static_cast<ostringstream *> (&(ostringstream() << record2->samplingRate))->str() + ":"
-//        + static_cast<ostringstream *> (&(ostringstream() << record2->priority))->str() + ":"
-//        + record2->category + ":" + record2->name;
 
 
 }

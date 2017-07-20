@@ -19,78 +19,6 @@ serverEPoll::~serverEPoll()
 
 }
 
-/*
- * Events are buffered. We need to prepare them to be analayzed. 
- * Mainly we need to separate messages as them all buffered in array 
- * received.
-*/
-void serverEPoll::handleBuffer(int descriptor, const char *buffer)
-{
-    vector<string> splitRecs;
-
-    /*
-     * Make sure you handle all records. Including those that
-     * partially in the buffer
-     */
-    desRecords[descriptor] += buffer;
-    string strRecords = desRecords[descriptor];
-
-    msgpack_unpacked result;
-    size_t off = 0;
-    msgpack_unpack_return ret;
-    int MIN_EVENT_BUFFER_SIZE = 40;
-
-    msgpack_unpacked_init(&result);
-    /* unpack recieved buffer into msgpack object */
-    size_t recv_size = 50;
-    ret = msgpack_unpack_next(&result, buffer, MIN_EVENT_BUFFER_SIZE, &off);
-    while (ret == MSGPACK_UNPACK_SUCCESS) {
-        msgpack_object obj = result.data;
-        char *unpacked_buffer = new char[off+1];
-        unpacked_buffer[off] = '\0';
-        msgpack_object_print_buffer(unpacked_buffer, off, obj);
-        cout<<unpacked_buffer;
-        ret = msgpack_unpack_next(&result, buffer, MIN_EVENT_BUFFER_SIZE, &off);
-    }
-
-    if (ret == MSGPACK_UNPACK_PARSE_ERROR) {
-        printf("The data in the buf is invalid format.\n");
-    }
-
-    msgpack_unpacked_destroy(&result);
-
-
-    /* split is defined on top */
-    splitRecs = split(strRecords, " ");
-    for (vector<string>::iterator it = splitRecs.begin(); it != splitRecs.end(); it++) {
-        string temp = *it;
-        /*
-         * If | was not found then this is partial record. The rest are in the buffer. We clear strRecord by only having the partial record.
-         * Assumption: All partial record will not end with | and they are always the last record in the buffer
-         */
-        if (temp.find("|") == string::npos)
-            strRecords = temp;
-        else {
-            temp[temp.size() - 1] = '\0';
-            strRecords.clear();
-
-            ProMon_logger(PROMON_DEBUG, "ProMon SERVEREPOLL: %s", temp.c_str());
-
-            char *record = new char[temp.size()]; //we have set the last character to null (above)
-            strcpy(record, temp.c_str());
-
-            Analyzer::handleMSG_static(record, sizeof buffer);
-
-            delete[] record;
-        }
-    }
-    desRecords[descriptor] = strRecords;
-
-
-
-
-}
-
 
 /*
  * This function creates and binds a TCP socket
@@ -273,17 +201,18 @@ int serverEPoll::start()
                 int done = 0;
 
                 while (1) {
-                    ssize_t count;
-                    char buf[120];
 
                     /*
-                     * we need to make sure all elements are zero.
-                     * Some compilers version does not initialize it with zero.
-                     * Some does not clear it.
+                    * The received event is the form of msgpack object,
+                    * msgpack reference: https://github.com/msgpack/msgpack-c
+                    */
+                    /* Reserve msgpack unpacker buffer */
+                    m_pac.reserve_buffer(MSG_PACK_BUFFER);
+
+                    /*
+                     * Receive events in the form of msgpack
                      */
-                    memset(buf, 0, sizeof buf);
-                    count = read(events[i].data.fd, buf, sizeof(buf) - 1);
-                    cout<<"Count is:"<<count<<"\n";
+                    ssize_t count = read(events[i].data.fd, m_pac.buffer(), m_pac.buffer_capacity());
 
                     if (count == 0) {
                         /* End of file. The remote has closed the
@@ -291,27 +220,42 @@ int serverEPoll::start()
                         done = 1;
                         break;
                     } else if (count == -1) {
-                        if (errno != EAGAIN)
-                        {
+
+                        /* If errno == EAGAIN, that means we have read all
+                     data. So go back to the main loop. */
+                        if (errno != EAGAIN) {
                             ProMon_logger(PROMON_ERROR, "ProMon SERVEREPOLL  read!");
                             done = 1;
                         }
                         break;
                     }
+                    m_pac.buffer_consumed((size_t) count);
 
-                    buf[sizeof(buf) - 1] = '\0';
-                    handleBuffer(events[i].data.fd, buf);
+                    /* Parse events in the form of msgpack object, one by one
+                     * And pass to buffer handler
+                     */
+                    msgpack::object_handle oh;
+                    while (m_pac.next(oh)) {
+                        msgpack::object msg = oh.get();
+                        /*
+                        * MSGPACK Events are send to analyzer for separating individual events.
+                        */
+                        Analyzer::handleMSG_static(msg);
 
+                        /* Keep the rank and job id to clean up in case the monitored application crashes. */
+                        if (rank_jobids.find(events[i].data.fd) == rank_jobids.end()) {
+                            int rank;
+                            string job_id;
+                            msg.via.array.ptr[2].convert(rank);//access rank from its msgpack object
+                            msg.via.array.ptr[3].convert(job_id);//access jobid from its msgpack object
 
-                    /* Keep the rank and job id to clean up in case the monitored application crashes. */
-//                    if (rank_jobids.find(events[i].data.fd) == rank_jobids.end()) {
-//                        char *rank, *job_id;
-//                        rank = strtok(buf, ";");
-//                        strtok(NULL, ";"); //username, no need here.
-//                        strtok(NULL, ";"); //jobMS, no need here.
-//                        job_id = strtok(NULL, ";");
-//                        rank_jobids[events[i].data.fd] = string(rank) + ":" + string(job_id);
-//                    }
+                            char rankStr[21];
+                            sprintf(rankStr, "%d", rank);
+                            rank_jobids[events[i].data.fd] = rankStr + string(":") + job_id;
+                        }
+
+                    }
+
                 }
 
 
@@ -322,18 +266,16 @@ int serverEPoll::start()
                     /* Closing the descriptor will make epoll remove it
                        from the set of descriptors which are monitored. */
                     close(events[i].data.fd);
-                    /* delete the recrod related to this descriptor to handle partial messages */
-                    desRecords.erase(events[i].data.fd);
 
                     /* Clean up resources in analyzer */
-//                    string temp = rank_jobids[events[i].data.fd];
-//                    char *buf = new char[temp.length() + 1];
-//                    strcpy(buf, temp.c_str());
-//                    char *rank = strtok(buf, ":");
-//                    char *job_id = strtok(NULL, ":");
-//                    ProMon_logger(PROMON_DEBUG, "ProMon SERVEREPOLL: Cleaning resources for %s:%s!", job_id, rank);
-//                    Analyzer::sumup_clean_static(rank, job_id);
-//                    rank_jobids.erase(events[i].data.fd);
+                    string temp = rank_jobids[events[i].data.fd];
+                    char *buf = new char[temp.length() + 1];
+                    strcpy(buf, temp.c_str());
+                    char *rank = strtok(buf, ":");
+                    char *job_id = strtok(NULL, ":");
+                    ProMon_logger(PROMON_DEBUG, "ProMon SERVEREPOLL: Cleaning resources for %s:%s!", job_id, rank);
+                    Analyzer::sumup_clean_static(rank, job_id);
+                    rank_jobids.erase(events[i].data.fd);
                 }
             }
         }

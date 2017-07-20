@@ -163,7 +163,7 @@ void Injector::startInstrumentation(BPatch_addressSpace *app, string strArgv, ve
 #endif
 
         /*
-         * We found the probe functions from the probe library. They have the same FIRST parameter (*tag) in common.
+         * We found the probe functions from the probe library.
          * We create their arguments. The details about what to be passed is in the injector's XML input file.
          * We find the function that we want to instrument and based on that pass the needed parameters.
          * We'll find out which probe function to use and We instrument the function by the probe function and it's arguments.
@@ -184,11 +184,12 @@ void Injector::startInstrumentation(BPatch_addressSpace *app, string strArgv, ve
         BPatch_constExpr recordPriority(it->priority); //priority
         args.push_back(&recordPriority);
 
-        BPatch_constExpr recordPosition(it->position.c_str()); //position
+        int position = strcmp(it->position.c_str(), "BEGIN") == 0?0:1; //0 indicates begin and 1 indicates end , for efficiency purposes
+        BPatch_constExpr recordPosition(position); //position
         args.push_back(&recordPosition);
 
         BPatch_constExpr samplingRate(it->samplingRate); //sampling rate
-        args.push_back(&recordPosition);
+        args.push_back(&samplingRate);
 
 
 
@@ -203,6 +204,9 @@ void Injector::startInstrumentation(BPatch_addressSpace *app, string strArgv, ve
          */
         BPatch_snippet *secondParam = NULL;
         if ((string(it->name)).find(DATA_ACCESS) != string::npos) {
+            BPatch_constExpr variableType(it->variableType.c_str()); //variableType
+            args.push_back(&variableType);
+
             BPatch_variableExpr *variable = appImage->findVariable(it->variableName.c_str());
             secondParam = new BPatch_constExpr(variable->getBaseAddr());
             args.push_back(secondParam);

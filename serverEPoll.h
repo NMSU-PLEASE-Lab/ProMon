@@ -16,25 +16,24 @@
 #include "util.h"
 #include "server.h"
 #include <msgpack.h>
+#include <msgpack.hpp>
+
 
 using namespace std;
 
 class serverEPoll : public server {
 public:
+    typedef msgpack::unique_ptr<msgpack::zone> unique_zone;
     serverEPoll(int p);
     virtual ~serverEPoll();
     int start();
+
 private:
-     void handleBuffer(int descriptor, const char* buffer);
-     int make_socket_non_blocking (int sfd);
-     int create_and_bind (char *port);
-
-     /*
-      * Map each received message to its descriptor.
-      * The reason we do this is to handle the partial messages.
-      */
-     map<int, string> desRecords;
-
+    /* Unpacker object for unpacking msgpack buffer */
+    msgpack::unpacker m_pac;
+    void handleBuffer(msgpack::object msg);
+    int make_socket_non_blocking (int sfd);
+    int create_and_bind (char *port);
      /*
       * Keep the rank and jobid for each connection in the rank:jobid format.
       * Use this data to close any open file by analyzer after connection closes or breaks.

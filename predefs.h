@@ -7,6 +7,8 @@ Configuration file
 
 #define BUF_SIZE 256 //the size of buffer used anywhere in this application
 
+#define MSG_PACK_BUFFER 2046 //the size of unpack buffer the msgpack events
+
 #define PROMON_UDP_PERIODIC_SWEEP 1
 #define PROMON_UDP_INACTIVITY_PERIOD 5
 

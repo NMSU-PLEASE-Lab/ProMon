@@ -22,10 +22,10 @@ void Analyzer::start_static()
 }
 
 /* The static handleMSG method */
-void Analyzer::handleMSG_static(char *msg, int msgLength)
+void Analyzer::handleMSG_static(msgpack::object msg)
 {
    if(itself != NULL)
-      itself->handleMSG(msg, msgLength);
+      itself->handleMSG(msg);
 }
 
 /* The static sum_clean method */
@@ -65,32 +65,42 @@ void Analyzer::shutdown(int num)
 /*
  * This function handles the received instrumentation record from running HPC applications.
  * For every record received by analyzer, handleMSG is called to analyze it.
+ * The received event is the form of msgpack object,
+ * msgpack reference: https://github.com/msgpack/msgpack-c
  */
-void Analyzer::handleMSG(char *msg, int msgLength)
+void Analyzer::handleMSG(msgpack::object msg)
 {
-   char *rank, *job_id, *userName, *jobMS, *seconds, *nanoseconds,
-            *event_name, *stepCount, *eventCount;
+   int rank, position;
+   long eventCount;
+   char *job_id, *userName, *jobMS, *event_name, *event_type,*eventCategory;
+   string positionStr;
+   char rankStr[15];
    char buffer[26]; //this is some local buffer and there is no need to keep it in predefs.h
 
    time_t current = time(NULL);
    ctime_r(&current, buffer);
    buffer[24] = '\0';
 
-   rank = strtok(msg, ";");
-   userName = strtok(NULL, ";");
-   jobMS = strtok(NULL, ";");
-   job_id = strtok(NULL, ";");
-   seconds = strtok(NULL, ";");
-   nanoseconds = strtok(NULL, ";");
-   event_name = strtok(NULL, ";");
-   eventCount = strtok(NULL, ";");
-   stepCount = strtok(NULL, ";");
+   msg.via.array.ptr[0].convert(lSeconds);
+   msg.via.array.ptr[1].convert(lNanoseconds);
+   msg.via.array.ptr[2].convert(rank);
+   msg.via.array.ptr[3].convert(job_id);
+   msg.via.array.ptr[4].convert(userName);
+   msg.via.array.ptr[5].convert(jobMS);
+   msg.via.array.ptr[6].convert(event_type);
+   msg.via.array.ptr[7].convert(event_name);
+   msg.via.array.ptr[8].convert(position);
 
-   lSeconds = atol(seconds);
-   lNanoseconds = atol(nanoseconds);
+   msg.via.array.ptr[9].convert(eventCount);
+   msg.via.array.ptr[10].convert(eventCategory);
+
    eventName = string(event_name);
 
-   ProMon_logger(PROMON_DEBUG, "ProMon Analyzer: %s %s %s %ld %ld ", 
+   /*Convert postion and rank to strings */
+   positionStr = position == 0?"BEGIN":"END";
+   sprintf(rankStr, "%d", rank);
+
+   ProMon_logger(PROMON_DEBUG, "ProMon Analyzer: %d %s %s %ld %ld ",
           rank, job_id, event_name, lSeconds, lNanoseconds);
 
    /*
@@ -100,7 +110,7 @@ void Analyzer::handleMSG(char *msg, int msgLength)
     * make sure you delete each app after it is done.
     */
    map<string, ApplicationDetails*>::iterator it;
-   string key = string(job_id) + ":" + string(rank);
+   string key = string(job_id) + ":" + rankStr;
    it = monitoredApps.find(key);
    if (it == monitoredApps.end())
    {
@@ -115,15 +125,15 @@ void Analyzer::handleMSG(char *msg, int msgLength)
     * setupLogFiles will always check if log files related to the record received from rank
     * are created. If log files are not created, then create them.
     */
-   setupLogFiles(rank, job_id);
+   setupLogFiles(rankStr, job_id);
 
    /*
     * Save all received record in the file log_record
     * This statement runs after setupLogFiles() to make sure log_record is not NULL
     */
-   fprintf(appDetails->log_record, "%03d;%s;%s;%s;%s;%s;%s;%s;%s;%s\n",
-         atoi(rank), job_id, userName, jobMS,
-         buffer, seconds, nanoseconds, event_name, stepCount, eventCount);
+   fprintf(appDetails->log_record, "%ld;%ld;%s;%d;%s;%s;%s;%s;%s;%s;%ld;%s\n",
+         lSeconds, lNanoseconds,buffer, rank, job_id,
+         userName, jobMS, event_type,event_name, positionStr, eventCount,eventCategory);
    fflush(appDetails->log_record);
 
    /*
@@ -143,7 +153,7 @@ void Analyzer::handleMSG(char *msg, int msgLength)
     */
    if (eventName.find(DUAL_BEGIN) != string::npos)
    {
-      handlingDualEventBegin(rank, job_id);
+      handlingDualEventBegin(rankStr, job_id);
    }
 
    /*
@@ -153,7 +163,7 @@ void Analyzer::handleMSG(char *msg, int msgLength)
     */
    if (eventName.find(DUAL_END) != string::npos)
    {
-      handlingDualEventEnd(rank, job_id);
+      handlingDualEventEnd(rankStr, job_id);
    }
 
    /*
@@ -161,7 +171,7 @@ void Analyzer::handleMSG(char *msg, int msgLength)
     */
    if (eventName.find(DUAL_BEGIN) == string::npos && eventName.find(DUAL_END) == string::npos)
    {
-      handlingSingleEvent(rank, job_id);
+      handlingSingleEvent(rankStr, job_id);
    }
 
    /*
@@ -170,7 +180,7 @@ void Analyzer::handleMSG(char *msg, int msgLength)
     */
    if (eventName.find(PROGRAMMABLE) != string::npos)
    {
-      handlingProgrammableEvent(rank, job_id);
+      handlingProgrammableEvent(rankStr, job_id);
    }
 
    /*
@@ -179,7 +189,7 @@ void Analyzer::handleMSG(char *msg, int msgLength)
     */
    if (eventName.find(LAST_RECORD) != string::npos)
    {
-      sumup_clean(rank, job_id);
+      sumup_clean(rankStr, job_id);
    }
 
 }
