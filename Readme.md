@@ -1,5 +1,9 @@
 
+<<<<<<< HEAD
 ## Installation of Dyninst 9.3.2
+=======
+Installation of Dyninst 9.3.2
+>>>>>>> d00d20997e4b9177c0d57a7a86ced44e33fef76e
 ============================
 1. cmake 3.7 or newer required for boost_1_61_0:
 sudo apt-get remove cmake
@@ -36,4 +40,4 @@ make install
 ##Promon Installation
 1. Change the necessary configuration parameters in Makefile
 2. make
-3. make install (for installation)
+
