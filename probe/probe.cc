@@ -754,10 +754,10 @@ int accessDataInst(const char *args, const char *name, const char *type, const c
      * PACK the event fields one by one in order:
      * timeSec,timeNanoSec,rank,jobId,username,jobMS,eventType,
      * eventName,eventPosition,eventCount,eventCategory,variable_value
-     * The total length of event is 12 for  DATA_ACCESS event
+     * The total length of event is 13 for  DATA_ACCESS event
      */
 
-    msgpack_pack_array(&pk, 12);
+    msgpack_pack_array(&pk, 13);
 
     msgpack_pack_long(&pk, time1.tv_sec);
 
@@ -791,30 +791,38 @@ int accessDataInst(const char *args, const char *name, const char *type, const c
     msgpack_pack_str(&pk, eventCategoryLength);
     msgpack_pack_str_body(&pk, category, eventCategoryLength);
 
-    /* Check variable type and pack the variable accordingly */
+    size_t varTypeLength = strlen(varType);
+    msgpack_pack_str(&pk, varTypeLength);
+    msgpack_pack_str_body(&pk, varType, varTypeLength);
+
+    char varValue[BUF_SIZE] = "";
     if (strcmp(varType, "short") == 0) {
         short *temp = static_cast<short*> (varAdd);
-        msgpack_pack_short(&pk, *temp);
+        sprintf(varValue, "%hu", *temp);
     } else if (strcmp(varType, "int") == 0) {
         int *temp = static_cast<int*> (varAdd);
-        msgpack_pack_int(&pk, *temp);
+        sprintf(varValue, "%d", *temp);
     } else if (strcmp(varType, "long") == 0) {
         long *temp = static_cast<long*> (varAdd);
-        msgpack_pack_long(&pk, *temp);
+        sprintf(varValue, "%ld", *temp);
     } else if (strcmp(varType, "float") == 0) {
         float *temp = static_cast<float*> (varAdd);
-        msgpack_pack_float(&pk, *temp);
-    }else if (strcmp(varType, "long long") == 0) {
-        long long *temp = static_cast<long long*> (varAdd);
-        msgpack_pack_long_long(&pk, *temp);
+        sprintf(varValue, "%g", *temp);
+    }else if (strcmp(varType, "long double") == 0) {
+        long double *temp = static_cast<long double*> (varAdd);
+        sprintf(varValue, "%Lg", *temp);
     }
     else if (strcmp(varType, "double") == 0) {
         double *temp = static_cast<double*> (varAdd);
-        msgpack_pack_double(&pk, *temp);
+        sprintf(varValue, "%g", *temp);
     } else if (strcmp(varType, "bool") == 0) {
         short *temp = static_cast<short*> (varAdd);
-        msgpack_pack_short(&pk, *temp);
+        sprintf(varValue, "%s", (*temp ? "TRUE" : "FALSE"));
     }
+
+    size_t varValueLength = strlen(varValue);
+    msgpack_pack_str(&pk, varValueLength);
+    msgpack_pack_str_body(&pk, varValue, varValueLength);
 
     if ((strcmp(comm_type, "TCP") == 0) || (strcmp(comm_type, "EPOLL") == 0)) {
         sendInstRecordTCP(&msgpack_buffer);

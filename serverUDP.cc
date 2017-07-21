@@ -45,7 +45,9 @@ int serverUDP::start()
     * Some compilers version does not initialize it with zero.
     */
    memset(buffer, 0, sizeof buffer);
-   for (;;)
+   m_pac.reserve_buffer(MSG_PACK_BUFFER);
+
+    for (;;)
    {
       clock_gettime(CLOCK_REALTIME, &time1);
 
@@ -72,7 +74,7 @@ int serverUDP::start()
       delete[] record;
 
 
-      Analyzer::handleMSG_static(buffer, sizeof buffer);
+//      Analyzer::handleMSG_static(buffer, sizeof buffer);
       /*
        * make sure the buffer is cleared.
        */

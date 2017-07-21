@@ -9,6 +9,7 @@ export PROMONIP=127.0.0.1
 export PROMONPORT=41111
 export JOB_SYSTEM=PBS
 # EPOLL, UDP, or LDMS
-export COMM_TYPE=EPOLL
+export COMM_TYPE=TCP
 
-
+# This is for testing remove on actual job run.
+export PBS_JOBID=123

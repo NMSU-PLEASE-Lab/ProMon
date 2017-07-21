@@ -75,7 +75,7 @@ void serverPOSIX::handleBuffer(const char* buffer)
 
         char *record = new char[temp.size()]; //we have set the last character to null (above)
         strcpy(record, temp.c_str());
-        Analyzer::handleMSG_static(record, sizeof buffer);
+//        Analyzer::handleMSG_static(record, sizeof buffer);
         delete[] record;
    }
    //desRecords[descriptor] = strRecords;

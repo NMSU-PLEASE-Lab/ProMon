@@ -72,8 +72,8 @@ void Analyzer::handleMSG(msgpack::object msg)
 {
    int rank, position;
    long eventCount;
-   char *job_id, *userName, *jobMS, *event_name, *event_type,*eventCategory;
-   string positionStr;
+   string job_id, userName, jobMS, event_name, event_type,eventCategory,variableType,variableValue;
+   const char * positionStr;
    char rankStr[15];
    char buffer[26]; //this is some local buffer and there is no need to keep it in predefs.h
 
@@ -93,15 +93,20 @@ void Analyzer::handleMSG(msgpack::object msg)
 
    msg.via.array.ptr[9].convert(eventCount);
    msg.via.array.ptr[10].convert(eventCategory);
+   if(!event_type.compare("DATA_ACCESS")) {
+       msg.via.array.ptr[11].convert(variableType);
+       msg.via.array.ptr[12].convert(variableValue);
+   }
 
-   eventName = string(event_name);
+
+    eventName = event_name;
 
    /*Convert postion and rank to strings */
    positionStr = position == 0?"BEGIN":"END";
    sprintf(rankStr, "%d", rank);
 
    ProMon_logger(PROMON_DEBUG, "ProMon Analyzer: %d %s %s %ld %ld ",
-          rank, job_id, event_name, lSeconds, lNanoseconds);
+          rank, job_id.c_str(), event_name.c_str(), lSeconds, lNanoseconds);
 
    /*
     * Do we have any record from this job_id and rank number?
@@ -125,15 +130,27 @@ void Analyzer::handleMSG(msgpack::object msg)
     * setupLogFiles will always check if log files related to the record received from rank
     * are created. If log files are not created, then create them.
     */
-   setupLogFiles(rankStr, job_id);
+   setupLogFiles(rankStr, job_id.c_str());
 
    /*
     * Save all received record in the file log_record
     * This statement runs after setupLogFiles() to make sure log_record is not NULL
     */
-   fprintf(appDetails->log_record, "%ld;%ld;%s;%d;%s;%s;%s;%s;%s;%s;%ld;%s\n",
-         lSeconds, lNanoseconds,buffer, rank, job_id,
-         userName, jobMS, event_type,event_name, positionStr, eventCount,eventCategory);
+    if(!event_type.compare("DATA_ACCESS"))
+    {
+        fprintf(appDetails->log_record, "%ld;%ld;%s;%d;%s;%s;%s;%s;%s;%s;%ld;%s;%s;%s\n",
+                lSeconds, lNanoseconds, buffer, rank, job_id.c_str(),
+                userName.c_str(), jobMS.c_str(), event_type.c_str(), event_name.c_str(), positionStr, eventCount,
+                eventCategory.c_str(),variableType.c_str(),variableValue.c_str());
+    }
+    else
+    {
+        fprintf(appDetails->log_record, "%ld;%ld;%s;%d;%s;%s;%s;%s;%s;%s;%ld;%s\n",
+                lSeconds, lNanoseconds, buffer, rank, job_id.c_str(),
+                userName.c_str(), jobMS.c_str(), event_type.c_str(), event_name.c_str(), positionStr, eventCount,
+                eventCategory.c_str());
+    }
+
    fflush(appDetails->log_record);
 
    /*
@@ -153,7 +170,7 @@ void Analyzer::handleMSG(msgpack::object msg)
     */
    if (eventName.find(DUAL_BEGIN) != string::npos)
    {
-      handlingDualEventBegin(rankStr, job_id);
+      handlingDualEventBegin(rankStr, job_id.c_str());
    }
 
    /*
@@ -163,7 +180,7 @@ void Analyzer::handleMSG(msgpack::object msg)
     */
    if (eventName.find(DUAL_END) != string::npos)
    {
-      handlingDualEventEnd(rankStr, job_id);
+      handlingDualEventEnd(rankStr, job_id.c_str());
    }
 
    /*
@@ -171,7 +188,7 @@ void Analyzer::handleMSG(msgpack::object msg)
     */
    if (eventName.find(DUAL_BEGIN) == string::npos && eventName.find(DUAL_END) == string::npos)
    {
-      handlingSingleEvent(rankStr, job_id);
+      handlingSingleEvent(rankStr, job_id.c_str());
    }
 
    /*
@@ -180,7 +197,7 @@ void Analyzer::handleMSG(msgpack::object msg)
     */
    if (eventName.find(PROGRAMMABLE) != string::npos)
    {
-      handlingProgrammableEvent(rankStr, job_id);
+      handlingProgrammableEvent(rankStr, job_id.c_str());
    }
 
    /*
@@ -189,7 +206,7 @@ void Analyzer::handleMSG(msgpack::object msg)
     */
    if (eventName.find(LAST_RECORD) != string::npos)
    {
-      sumup_clean(rankStr, job_id);
+      sumup_clean(rankStr, job_id.c_str());
    }
 
 }

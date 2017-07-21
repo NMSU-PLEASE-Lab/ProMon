@@ -24,11 +24,9 @@ PMSPEC=$2
 #
 export PROMONHOME=/home/ujjwal/Source/ProMon2
 export JOB_SYSTEM=PBS
-#export PROMONIP_INT=11.128.0.31
-#export PROMONIP=$MYIP
 export PROMONIP=127.0.0.1
 export PROMONPORT=41111
-# EPOLL, UDP, or LDMS
+# EPOLL,TCP, UDP, MSGQUEUE
 export COMM_TYPE=EPOLL
 
 # I needed to dynamically figure out the IP address for the server location, but
@@ -39,26 +37,18 @@ echo "Promon server running on $PROMONIP"
 
 #
 # Run the event collector on the job start node
-#
-#
-#cd /lscratch2/joncook/promon
 cd /home/ujjwal/Source/ProMon2
+
 # I think the server may not need the adjusted libpath, but it
 # doesn't seem to bother anything right now; the ProMon tools
 # are compiled using the Gnu compilers, and the miniGhost we are
 # using is compiled with PGI, so our environment is not set up
 # automatically for Gnu
-#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/ujjwal/Source/dwarf-20140413/lib:/home/ujjwal/Build/DyninstAPI-9.3.2/lib
 export LD_LIBRARY_PATH=/home/ujjwal/Build/DyninstAPI-9.3.2/lib
+
 #${PROMONHOME}/promon_analyzer &> pma.out.$PBS_JOBID &
 # allow server time to initialize
 #sleep 5
-
-# I needed to dynamically figure out the IP address for the server location, but
-# you should be able to just use a static one as the commented out ones above
-#export PROMONIP=`/sbin/ifconfig | grep '11.128' | awk -F: '{print $2}' | awk '{print $1}'`
-echo "Promon server running on $PROMONIP"
-
 
 #
 # Now set up to run the instrumentation injector. The injector uses
