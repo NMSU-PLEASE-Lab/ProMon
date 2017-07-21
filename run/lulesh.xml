@@ -11,6 +11,7 @@
          <Function>main</Function>
          <Loop>1</Loop>
          <Position>BEGIN</Position>
+
       </BeginPoint>
       <EndPoint>
          <Function>main</Function>
@@ -19,22 +20,59 @@
       </EndPoint>
    </MonElement>
 
-   <MonElement>
-      <Priority>0</Priority>
-      <Type>DUAL</Type>
-      <Category>Loop</Category>
-      <Name>main_loop1.1</Name>
-      <BeginPoint>
-         <Function>InitStressTermsForElems</Function>
-         <Loop>1</Loop>
-         <Position>BEGIN</Position>
-      </BeginPoint>
-      <EndPoint>
-         <Function>main</Function>
-         <Loop>1</Loop>
-         <Position>END</Position>
-      </EndPoint>
-   </MonElement>
+   <!--<MonElement>-->
+      <!--<Priority>0</Priority>-->
+      <!--<Type>DUAL</Type>-->
+      <!--<Category>Loop</Category>-->
+      <!--<Name>main_loop1.1</Name>-->
+      <!--<BeginPoint>-->
+         <!--<Function>main</Function>-->
+         <!--<Loop>1.1</Loop>-->
+         <!--<Position>BEGIN</Position>-->
+
+      <!--</BeginPoint>-->
+      <!--<EndPoint>-->
+         <!--<Function>main</Function>-->
+         <!--<Loop>1.1</Loop>-->
+         <!--<Position>END</Position>-->
+      <!--</EndPoint>-->
+   <!--</MonElement>-->
+
+   <!--<MonElement>-->
+      <!--<Priority>0</Priority>-->
+      <!--<Type>DUAL</Type>-->
+      <!--<Category>Loop</Category>-->
+      <!--<Name>main_loop1.2</Name>-->
+      <!--<BeginPoint>-->
+         <!--<Function>main</Function>-->
+         <!--<Loop>1.2</Loop>-->
+         <!--<Position>BEGIN</Position>-->
+
+      <!--</BeginPoint>-->
+      <!--<EndPoint>-->
+         <!--<Function>main</Function>-->
+         <!--<Loop>1.2</Loop>-->
+         <!--<Position>END</Position>-->
+      <!--</EndPoint>-->
+   <!--</MonElement>-->
+
+   <!--<MonElement>-->
+      <!--<Priority>0</Priority>-->
+      <!--<Type>DUAL</Type>-->
+      <!--<Category>Loop</Category>-->
+      <!--<Name>main_loop1.3</Name>-->
+      <!--<BeginPoint>-->
+         <!--<Function>main</Function>-->
+         <!--<Loop>1.3</Loop>-->
+         <!--<Position>BEGIN</Position>-->
+
+      <!--</BeginPoint>-->
+      <!--<EndPoint>-->
+         <!--<Function>main</Function>-->
+         <!--<Loop>1.3</Loop>-->
+         <!--<Position>END</Position>-->
+      <!--</EndPoint>-->
+   <!--</MonElement>-->
 
 
 

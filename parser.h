@@ -35,6 +35,7 @@ struct instRecord
    {
       basicBlockNo=-1; loopNo="";type="";
       samplingRate=1; priority=1; category="";
+      variableType ="";
       eachIteration = false;
       programmable = false;
    }

@@ -6,6 +6,7 @@
 # Other variables can be changed based on requirements
 #******************************************************************************************
 
+
 # Compile in serial or parallel (mpi)
 # Serial Mode
 # export TARGET = serial
@@ -26,11 +27,15 @@ export DEBUG = -DDEBUG
 
 export PROMONHOME=/home/ujjwal/Source/ProMon2
 # To compile monitoring probe functions in Debug mode, uncomment the line below.
-export DEBUG_PROBFUNC = -DDEBUG_PROBFUNC
+instpath = /home/ujjwal/Source/ProMon2/lib
 
 # To enable logging uncomment 
 # You can select default logging or Boost logging by next configuration
 export MT_WITH_LOG = -DMT_WITH_LOG
+
+#InstallPath for Installation
+export DEBUG_PROBFUNC = -DDEBUG_PROBFUNC
+
 
 # ProMon uses Boost Log or Simple built in log
 # To compile with Boost log component and disable the simple built in log
