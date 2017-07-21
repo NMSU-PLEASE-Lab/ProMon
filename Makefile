@@ -44,6 +44,7 @@ export MT_WITH_LOG = -DMT_WITH_LOG
   MPICXX = mpicxx
   DYNINSTPATH = /home/ujjwal/Build/DyninstAPI-9.3.2
   BOOSTPATH = /home/ujjwal/Build/boost_1_61_0
+  MSGPACKPATH = /home/ujjwal/Build/msgpack-2.1.3
 
 
 # Compiler flags
@@ -63,6 +64,8 @@ ifneq ($(BOOSTLOG),)
       -lboost_date_time -lboost_chrono
 endif
 
+#SET linker and flags for msgpack
+BOOSTLFLAGS = -I$(MSGPACKPATH) -L$(MSGPACKPATH)/lib -lmsgpackc
 #
 # We link tinyxml object files directly in rather than relying on
 # a dynamic link library so that we don't have to worry about a runtime
@@ -82,7 +85,7 @@ all: check-env submakes promon_analyzer promon_report promon_injector
 
 submakes:
 	cd $(TINYXML); make lib TARGETCXX=$(CXX) TARGETCC=$(CC) 
-	cd probe; make TARGETCXX=$(CXX) TARGETMPICXX=$(MPICXX) DYNINSTPATH=$(DYNINSTPATH) BOOSTPATH=$(BOOSTPATH) 
+	cd probe; make TARGETCXX=$(CXX) TARGETMPICXX=$(MPICXX) DYNINSTPATH=$(DYNINSTPATH) BOOSTPATH=$(BOOSTPATH) MSGPACKPATH=$(MSGPACKPATH)
 
 promon_injector: injector.o parser.o util.o
 	$(CXX) -o promon_injector injector.o parser.o util.o $(EXTOBJS) $(LDFLAGS) $(BOOSTLFLAGS)

@@ -23,6 +23,8 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <msgpack.h>
+#include <msgpack.hpp>
 #include "predefs.h"
 #include "util.h"
 #include "server.h"
@@ -53,7 +55,21 @@ struct LogItem
     */
    int analyzerCount; 
 };
-
+struct  eventRecord
+{
+    long timeSec;
+    long timeNanoSec;
+    int rank;
+    string jobId;
+    string username;
+    string jobMS;
+    string eventType;
+    string eventName;
+    string eventPosition;
+    string eventCount;
+    string eventCategory;
+    string eventVarValue;
+};
 struct ApplicationDetails
 {
    /*
@@ -117,13 +133,13 @@ class Analyzer
 {
    public:
    Analyzer(){itself=this;};
-   void handleMSG(char *msg, int msgLength);
+   void handleMSG(msgpack::object msg);
    void sumup_clean(const char *rank, const char *job_id);
    void start();
    void shutdown(int num);
    static void shutdown_static(int num);
    static void start_static();
-   static void handleMSG_static(char *msg, int msgLength);
+   static void handleMSG_static(msgpack::object msg);
    static void sumup_clean_static(const char *rank, const char *job_id);
 
    private:

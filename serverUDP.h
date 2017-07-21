@@ -21,6 +21,8 @@
 #include "server.h"
 #include <pthread.h>
 #include <map>
+#include <msgpack.h>
+#include <msgpack.hpp>
 
 using namespace std;
 
@@ -40,6 +42,9 @@ private:
      */
     map<string, long> rank_jobids;
     int maxInactivity;
+
+    /* Unpacker object for unpacking msgpack buffer */
+    msgpack::unpacker m_pac;
 };
 
 void *TimerRoutine(void *);

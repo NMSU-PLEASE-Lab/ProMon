@@ -125,17 +125,10 @@ void Parser::monElement(TiXmlElement *pElem, instRecord *record1,
                 return;
             }
             if (record1->type == "DUAL") {
-                record1->name = DUAL_BEGIN + string(pText);
-                record2->name = DUAL_END + string(pText);
-            } else if (record1->type == "SINGULAR") {
-                record1->name = SINGULAR + string(pText);
-            } else if (record1->type == "HEARTBEAT") {
-                record1->name = HEARTBEAT + string(pText);
-            } else if (record1->type == "DATA_ACCESS") {
-                record1->name = DATA_ACCESS + string(pText);
-            } else {
                 record1->name = pText;
                 record2->name = pText;
+            } else  {
+                record1->name = pText;
             }
         } else if (strcmp(pKey, "Programmable") == 0) {
             if (strcmp(pText, "true") == 0) {
@@ -179,22 +172,10 @@ void Parser::monElement(TiXmlElement *pElem, instRecord *record1,
      */
     if (record1->programmable && record2->programmable) {
         record1->name = record1->name + PROGRAMMABLE;
-        record2->name = record1->name + PROGRAMMABLE;
+        record2->name = record2->name + PROGRAMMABLE;
     }
 
 
-
-    /* All needed values are available.
-     * The event name that is passed to Injector will be in either these formats:
-     * SamplingRate:Priority:Category:name or
-     * SamplingRate:Priority:Category:DATA_ACCESS:Type:Name:varType (varType is added in the variable function)
-     */
-    record1->name = static_cast<ostringstream *> (&(ostringstream() << record1->samplingRate))->str() + ":"
-        + static_cast<ostringstream *> (&(ostringstream() << record1->priority))->str() + ":"
-        + record1->category + ":" + record1->name;
-    record2->name = static_cast<ostringstream *> (&(ostringstream() << record2->samplingRate))->str() + ":"
-        + static_cast<ostringstream *> (&(ostringstream() << record2->priority))->str() + ":"
-        + record2->category + ":" + record2->name;
 }
 
 /*
@@ -217,7 +198,6 @@ void Parser::variable(TiXmlElement *pElem, instRecord *record)
         } else if (strcmp(pKey, "Name") == 0) {
             hasName = true;
             record->variableName = pText;
-            record->name = record->name + ":" +  record->variableType;
         }
 
     }
@@ -234,7 +214,7 @@ void Parser::variable(TiXmlElement *pElem, instRecord *record)
  */
 void Parser::point(TiXmlElement *pElem, instRecord *record)
 {
-    bool hasFunction = false, hasPosition = false, hasLoop = false, hasBB = false;
+    bool hasFunction = false, hasPosition = false;
     TiXmlHandle hRoot = TiXmlHandle(pElem);
     pElem = hRoot.FirstChild().Element();
     for (; pElem; pElem = pElem->NextSiblingElement()) {
@@ -266,19 +246,14 @@ void Parser::point(TiXmlElement *pElem, instRecord *record)
             return;
         }
         else if (strcmp(pKey, "BasicBlock") == 0) {
-            hasBB = true;
             record->basicBlockNo = atoi(pText);
         } else if (strcmp(pKey, "Loop") == 0) {
-            hasLoop = true;
             /*loop format is now changed to string for eg: 1,1.1,2,2.1,2.2.2 etc*/
             record->loopNo = pText;    // atoi(pText);
         }
     }
 
-    if (hasLoop) record->name = record->name + ";Loop";
-    else if (hasBB) record->name = record->name + ";BasicBlock";
-    else record->name = record->name + ";Function";
-    ProMon_logger(PROMON_DEBUG, "ProMon Parser: RECORD NAME FOR POINT:%s",record->name.c_str());
+
     if (!hasFunction || !hasPosition) {
         ProMon_logger(PROMON_ERROR, "ProMon Parser: In the Point tag, Function or Position is not defined!!");
         return;

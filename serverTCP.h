@@ -19,6 +19,8 @@
 #include "util.h"
 #include <string>
 #include <map>
+#include <msgpack.h>
+#include <msgpack.hpp>
 #include "server.h"
 
 using namespace std;
@@ -35,6 +37,9 @@ private:
       * Use this data to close any open file by analyzer after connection closes or breaks.
       */
      map<int, string> rank_jobids;
+
+    /* Unpacker object for unpacking msgpack buffer */
+    msgpack::unpacker m_pac;
 
 };
 

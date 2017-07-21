@@ -1,4 +1,5 @@
 #include "serverPOSIX.h"
+
 using namespace std;
 
 /*
@@ -8,14 +9,6 @@ using namespace std;
 #define MAXEVENTS 200
 #define MSGSZ     1024
 
-/*
- * Declare the message structure.
- */
-
-typedef struct msgbuf1 {
-    long    mtype;
-    char    mtext[MSGSZ];
-} message_buf1;
 
 
 /*
@@ -24,69 +17,26 @@ typedef struct msgbuf1 {
  */
 //static map<int, string> desRecords;
 
-serverPOSIX::serverPOSIX(int p):server(p) {
-
-}
-
-serverPOSIX::~serverPOSIX() {
-
-}
-
-/*
- * Events are buffered. We need to prepare them to be analayzed. 
- * Mainly we need to separate messages as them all buffered in array 
- * received.
-*/
-void serverPOSIX::handleBuffer(const char* buffer)
+serverPOSIX::serverPOSIX(int p) : server(p)
 {
-   vector<string> splitRecs;
 
-   /*
-    * Make sure you handle all records. Including those that
-    * partially in the buffer
-    */
-   //desRecords[descriptor] += buffer;
-   string strRecords = buffer;
-   //desRecords[descriptor];
-
-   /*
-    * Records should not have any new line character 
-    */
-//   string::size_type pos = 0; 
-//   while ( ( pos = strRecords.find ("\n",pos) ) != string::npos )
-//   {
-//      strRecords.erase ( pos, 2 );
-//   }
-  
-  
-   /* split is defined on top */ 
-   splitRecs = split(strRecords, " ");
-   for(vector<string>::iterator it = splitRecs.begin(); it != splitRecs.end(); it++)
-   {
-        string temp = *it;
-        /*
-         * If | was not found then this is partial record. The rest are in the buffer. We clear strRecord by only having the partial record.
-         * Assumption: All partial record will not end with | and they are always the last record in the buffer
-         */
-        temp[temp.size()-1]='\0';   
-        strRecords.clear();
-
-        ProMon_logger(PROMON_DEBUG, "ProMon SERVERMSGQUEUE: %s", temp.c_str());
-
-        char *record = new char[temp.size()]; //we have set the last character to null (above)
-        strcpy(record, temp.c_str());
-        Analyzer::handleMSG_static(record, sizeof buffer);
-        delete[] record;
-   }
-   //desRecords[descriptor] = strRecords;
 }
 
+serverPOSIX::~serverPOSIX()
+{
 
- /* The main function to serve IPC - Message Queue
+}
+
+/* The main function to serve IPC - Message Queue
  */
 int serverPOSIX::start()
 {
-    message_buf1  buf;
+    /*
+    * The received event is the form of msgpack object,
+    * msgpack reference: https://github.com/msgpack/msgpack-c
+    */
+    /* Reserve msgpack unpacker buffer */
+    m_pac.reserve_buffer(MSG_PACK_BUFFER);
 
     /*
      * Get the message queue id for the
@@ -95,41 +45,31 @@ int serverPOSIX::start()
      */
     mqd_t msqid = mq_open("PROMON_Queue", O_RDONLY);
 
-    if (msqid == -1)
-    {
-      ProMon_logger(PROMON_DEBUG, "Error opening the POSIX QUEUE");
+    if (msqid == -1) {
+        ProMon_logger(PROMON_DEBUG, "Error opening the POSIX QUEUE");
     }
 
-    
-    
+
+
     /*
      * Receive the events
      */
-    while (mq_receive(msqid, (char*) &buf, sizeof(buf), 0) != -1)
-    {
-         printf("%s\n", buf.mtext);
-         ProMon_logger(PROMON_DEBUG, "ProMon GetPacket: %s", buf.mtext);
-         handleBuffer(buf.mtext);
-         //handleBuffer(events[i].data.fd, buf);
-         
+    ssize_t ret = mq_receive(msqid, m_pac.buffer(), m_pac.buffer_capacity(), 0);
+    while (ret != -1) {
+        m_pac.buffer_consumed((size_t) ret);
+/* Parse events in the form of msgpack object, one by one
+                     * And pass to buffer handler
+                     */
+        msgpack::object_handle oh;
+        while (m_pac.next(oh)) {
+            msgpack::object msg = oh.get();
+            /*
+            * MSGPACK Events are send to analyzer for separating individual events.
+            */
+            Analyzer::handleMSG_static(msg);
+        }
+        ret = mq_receive(msqid, m_pac.buffer(), m_pac.buffer_capacity(), 0);
     }
-    
-        // handleBuffer(events[i].data.fd, buf);
-   
-
-//   if (done)
-//   {
-//        ProMon_logger(PROMON_DEBUG, "ProMon SERVEREPOLL: Closed connection on descriptor %d\n",
-//             events[i].data.fd);
-//
-//       /* Closing the descriptor will make epoll remove it
-//          from the set of descriptors which are monitored. */
-//       close (events[i].data.fd);
-//       /* delete the recrod related to this descriptor to handle partial messages */  
-//       desRecords.erase(events[i].data.fd);
-//    }
-   
-
-   return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
 

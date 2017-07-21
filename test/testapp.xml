@@ -75,7 +75,7 @@
     <MonElement>
         <Priority>0</Priority>
         <Type>SINGULAR</Type>
-        <Category>Hadi</Category>
+        <Category>Heartbeat</Category>
         <Name>Heartbeat</Name>
         <Point>
             <Function>doSimIteration</Function>

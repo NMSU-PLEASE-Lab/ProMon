@@ -69,7 +69,7 @@ void Injector::startInstrumentation(BPatch_addressSpace *app, string strArgv, ve
     bool load = false;
     std::vector < BPatch_function * > functions;
     std::vector < BPatch_function * > probeFunctions;
-    std::vector < BPatch_point * > *points;
+    std::vector < BPatch_point * > *points = NULL;
     BPatch_image *appImage = app->getImage();
 
     /*
@@ -126,8 +126,7 @@ void Injector::startInstrumentation(BPatch_addressSpace *app, string strArgv, ve
      * all records are provided to injector by getRecord() function.
      *
      */
-    for (vector<instRecord>::iterator it = arrangedrecs.begin();
-         it != arrangedrecs.end(); ++it) {
+    for (vector<instRecord>::iterator it = arrangedrecs.begin(); it != arrangedrecs.end(); ++it) {
 
         /*
          * Find the function in the running application.
@@ -164,7 +163,7 @@ void Injector::startInstrumentation(BPatch_addressSpace *app, string strArgv, ve
 #endif
 
         /*
-         * We found the probe functions from the probe library. They have the same FIRST parameter (*tag) in common.
+         * We found the probe functions from the probe library.
          * We create their arguments. The details about what to be passed is in the injector's XML input file.
          * We find the function that we want to instrument and based on that pass the needed parameters.
          * We'll find out which probe function to use and We instrument the function by the probe function and it's arguments.
@@ -172,24 +171,48 @@ void Injector::startInstrumentation(BPatch_addressSpace *app, string strArgv, ve
         BPatch_Vector < BPatch_snippet * > args; //contains all the parameters
         BPatch_constExpr prgArgs(strArgv.c_str()); //arg parameter for probe function
         args.push_back(&prgArgs);
-        BPatch_constExpr tag(it->name.c_str()); //first parameter (common)
-        args.push_back(&tag);
+
+        BPatch_constExpr recordName(it->name.c_str()); //name
+        args.push_back(&recordName);
+
+        BPatch_constExpr recordType(it->type.c_str()); //type
+        args.push_back(&recordType);
+
+        BPatch_constExpr recordCategory(it->category.c_str()); //category
+        args.push_back(&recordCategory);
+
+        BPatch_constExpr recordPriority(it->priority); //priority
+        args.push_back(&recordPriority);
+
+        int position = strcmp(it->position.c_str(), "BEGIN") == 0?0:1; //0 indicates begin and 1 indicates end , for efficiency purposes
+        BPatch_constExpr recordPosition(position); //position
+        args.push_back(&recordPosition);
+
+        BPatch_constExpr samplingRate(it->samplingRate); //sampling rate
+        args.push_back(&samplingRate);
+
         ProMon_logger(PROMON_DEBUG, "prgargs: %s, tag:%s",
                       strArgv.c_str(), it->name.c_str());
 
         /*
-         * Data access instrumentation function has a second parameter.
-         * The second parameter is the address of the variable to access
-         * Notice that secondParam is created by New keyword. It has to be
-         * deleted at end. And it can not be only created in the if block.
+         * Data access instrumentation function has two extra  parameters.
+         * VariableType and Address variable
+         * Notice that these are created by New keyword. So need to be
+         * deleted at end. And can not be only created in the if block.
          */
-        BPatch_snippet *secondParam = NULL;
-        if ((string(it->name)).find(DATA_ACCESS) != string::npos) {
+        BPatch_snippet *varTypeParam = NULL;
+        BPatch_snippet *varAddressParam = NULL;
+        if ((it->type).find(DATA_ACCESS) != string::npos) {
+
+            varTypeParam = new BPatch_constExpr(it->variableType.c_str());
+            args.push_back(varTypeParam);
+
             BPatch_variableExpr *variable = appImage->findVariable(it->variableName.c_str());
-            secondParam = new BPatch_constExpr(variable->getBaseAddr());
-            args.push_back(secondParam);
+            varAddressParam = new BPatch_constExpr(variable->getBaseAddr());
+            args.push_back(varAddressParam);
             ProMon_logger(PROMON_DEBUG, "ProMon Injector: the address in injector: %p ",
                           variable->getBaseAddr());
+
         }
 
 
@@ -203,12 +226,13 @@ void Injector::startInstrumentation(BPatch_addressSpace *app, string strArgv, ve
          * We need to find out which probe function to use.
          */
         BPatch_funcCallExpr *probeFunction;
-        if ((string(it->name)).find(DATA_ACCESS) == string::npos)
+        if ((it->type).find(DATA_ACCESS) == string::npos)
             probeFunction = &probeFunction0;
         else
             probeFunction = &probeFunction1;
 
         BPatchSnippetHandle *sh;
+
 
         /*
          * If no basic block is defined to be instrumented then
@@ -232,6 +256,7 @@ void Injector::startInstrumentation(BPatch_addressSpace *app, string strArgv, ve
                 }
                 ProMon_logger(PROMON_DEBUG, "ProMon Injector: insert probe at %s %s position %p",
                               it->position.c_str(), it->name.c_str(), sh);
+
             }
 
         } else if (it->basicBlockNo != -1) {
@@ -319,14 +344,18 @@ void Injector::startInstrumentation(BPatch_addressSpace *app, string strArgv, ve
 
         /* Clear the list of points before going to next loop
          */
-        points->clear();
+        if (points != NULL)
+            points->clear();
 
         /*
-         * We may have created the second parameter for probe function.
-         * We need to delete it before going to next loop.
+         * We may have two extra parameter for type DATA_ACCESS
+         * We need to delete them before going to next loop.
          */
-        if (secondParam != NULL)
-            delete secondParam;
+        if (varTypeParam != NULL)
+            delete varTypeParam;
+        if (varAddressParam != NULL)
+            delete varAddressParam;
+
     }
 }
 

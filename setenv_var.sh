@@ -1,9 +1,16 @@
 #!/bin/bash
 
-module add gcc-4.7.2
-module load mvapich2-2.0/intel
-export LD_LIBRARY_PATH=/nmsu/tools/dwarf-20140413/lib:/nmsu/tools/DyninstAPI-8.1.2/lib:/nmsu/tools/gsl-1.15/lib:/opt/intel/lib/intel64
-export DYNINSTAPI_RT_LIB=/nmsu/tools/DyninstAPI-8.1.2/lib/libdyninstAPI_RT.so
-export PROMONHOME=/home/oaaziz/ProMon/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/ujjwal/Build/DyninstAPI-9.3.2/lib:/home/ujjwal/Source/ProMon2/probe:/home/ujjwal/Build/msgpack-2.1.3/lib
+export DYNINSTAPI_RT_LIB=/home/ujjwal/Build/DyninstAPI-9.3.2/lib/libdyninstAPI_RT.so
+export PROMONHOME=/home/ujjwal/Source/ProMon2
+export LD_LIBRARY_PATH=${PROMONHOME}/probe:$LD_LIBRARY_PATH
+export PROMONIP=127.0.0.1
+export PROMONPORT=41111
+export JOB_SYSTEM=PBS
+# EPOLL,TCP, UDP, MSGQUEUE,POSIX,UDP
+export COMM_TYPE=UDP
+
+# This is for testing remove on actual job run.
+export PBS_JOBID=123
 
 

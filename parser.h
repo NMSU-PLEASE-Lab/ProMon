@@ -35,10 +35,12 @@ struct instRecord
    {
       basicBlockNo=-1; loopNo="";type="";
       samplingRate=1; priority=1; category="";
+      variableType ="";
       eachIteration = false;
       programmable = false;
    }
 };
+
 
 /* Important NOTE:
  * Monitoring events are in three types. SINGULAR, DUAL, and DATA_ACCESS.

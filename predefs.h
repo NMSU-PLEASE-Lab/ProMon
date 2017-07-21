@@ -7,6 +7,8 @@ Configuration file
 
 #define BUF_SIZE 256 //the size of buffer used anywhere in this application
 
+#define MSG_PACK_BUFFER 1024 //the size of unpack buffer the msgpack events
+
 #define PROMON_UDP_PERIODIC_SWEEP 1
 #define PROMON_UDP_INACTIVITY_PERIOD 5
 
@@ -45,7 +47,7 @@ Configuration file
 #define DEFENSIVEIO "DefensiveIO"
 #define PRODUCTIVEIO "ProductiveIO"
 #define RUN "Run"
-#define DATA_ACCESS "DATA_ACCESS;;"
+#define DATA_ACCESS "DATA_ACCESS"
 #define PROGRAMMABLE "-PROGRAMMABLE;Program"
 #define FIRST_RECORD "DUAL;Begin;RECORD" PROGRAMMABLE
 #define LAST_RECORD "DUAL;End;RECORD" PROGRAMMABLE

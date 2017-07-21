@@ -16,6 +16,7 @@
 #include "BPatch_flowGraph.h"
 #include "CodeObject.h"
 
+#define DYNINST_API_RT_PATH "/home/ujjwal/Build/DyninstAPI-9.3.2/lib/libdyninstAPI_RT.so"
 using namespace std;
 using namespace Dyninst;
 using namespace ParseAPI;
@@ -44,7 +45,7 @@ int main(int argc, char *argv[])
 
     app = bpatch.openBinary(argv[1],true);
     BPatch_image *appImage = app->getImage();
-    app->loadLibrary("/home/ujjwal/Build/DyninstAPI-9.3.2/lib/libdyninstAPI_RT.so");
+    app->loadLibrary(DYNINST_API_RT_PATH);
     if(argc>2){
         std::vector<BPatch_function *> functions;
         appImage->findFunction(argv[2],functions);
