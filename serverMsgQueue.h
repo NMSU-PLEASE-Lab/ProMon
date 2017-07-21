@@ -18,6 +18,8 @@
 #include "analyzer.h"
 #include "util.h"
 #include "server.h"
+#include <msgpack.h>
+#include <msgpack.hpp>
 using namespace std;
 
 /* Let compiler know that these classes exist. */
@@ -29,11 +31,8 @@ public:
     virtual ~serverMsgQueue();
     int start();
 private:
-     //void handleBuffer(int descriptor, const char* buffer);
-    void handleBuffer(const char* buffer);
-//     int make_socket_non_blocking (int sfd);
-//     int create_and_bind (char *port);
-     map<int, string> desRecords;
+    /* Unpacker object for unpacking msgpack buffer */
+    msgpack::unpacker m_pac;
 };
 
 #endif /*SERVERMSGQUEUE_H*/

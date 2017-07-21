@@ -578,7 +578,6 @@ extern "C"
 int sendInstRecord(const char *args, const char *name, const char *type, const char *category, unsigned int priority,
                    unsigned int position, unsigned int samplingRate)
 {
-
     /*
      * procLimiter defines if this rank can send data
      */
@@ -674,7 +673,6 @@ int sendInstRecord(const char *args, const char *name, const char *type, const c
     msgpack_pack_str_body(&pk, category, eventCategoryLength);
 
 
-
     if ((strcmp(comm_type, "TCP") == 0) || (strcmp(comm_type, "EPOLL") == 0)) {
         sendInstRecordTCP(&msgpack_buffer);
     }
@@ -753,7 +751,7 @@ int accessDataInst(const char *args, const char *name, const char *type, const c
     /*
      * PACK the event fields one by one in order:
      * timeSec,timeNanoSec,rank,jobId,username,jobMS,eventType,
-     * eventName,eventPosition,eventCount,eventCategory,variable_value
+     * eventName,eventPosition,eventCount,eventCategory,variableType,variable_value
      * The total length of event is 13 for  DATA_ACCESS event
      */
 

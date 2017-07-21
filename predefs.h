@@ -47,7 +47,7 @@ Configuration file
 #define DEFENSIVEIO "DefensiveIO"
 #define PRODUCTIVEIO "ProductiveIO"
 #define RUN "Run"
-#define DATA_ACCESS "DATA_ACCESS;;"
+#define DATA_ACCESS "DATA_ACCESS"
 #define PROGRAMMABLE "-PROGRAMMABLE;Program"
 #define FIRST_RECORD "DUAL;Begin;RECORD" PROGRAMMABLE
 #define LAST_RECORD "DUAL;End;RECORD" PROGRAMMABLE

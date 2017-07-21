@@ -191,27 +191,28 @@ void Injector::startInstrumentation(BPatch_addressSpace *app, string strArgv, ve
         BPatch_constExpr samplingRate(it->samplingRate); //sampling rate
         args.push_back(&samplingRate);
 
-
-
         ProMon_logger(PROMON_DEBUG, "prgargs: %s, tag:%s",
                       strArgv.c_str(), it->name.c_str());
 
         /*
-         * Data access instrumentation function has a second parameter.
-         * The second parameter is the address of the variable to access
-         * Notice that secondParam is created by New keyword. It has to be
-         * deleted at end. And it can not be only created in the if block.
+         * Data access instrumentation function has two extra  parameters.
+         * VariableType and Address variable
+         * Notice that these are created by New keyword. So need to be
+         * deleted at end. And can not be only created in the if block.
          */
-        BPatch_snippet *secondParam = NULL;
-        if ((string(it->name)).find(DATA_ACCESS) != string::npos) {
-            BPatch_constExpr variableType(it->variableType.c_str()); //variableType
-            args.push_back(&variableType);
+        BPatch_snippet *varTypeParam = NULL;
+        BPatch_snippet *varAddressParam = NULL;
+        if ((it->type).find(DATA_ACCESS) != string::npos) {
+
+            varTypeParam = new BPatch_constExpr(it->variableType.c_str());
+            args.push_back(varTypeParam);
 
             BPatch_variableExpr *variable = appImage->findVariable(it->variableName.c_str());
-            secondParam = new BPatch_constExpr(variable->getBaseAddr());
-            args.push_back(secondParam);
+            varAddressParam = new BPatch_constExpr(variable->getBaseAddr());
+            args.push_back(varAddressParam);
             ProMon_logger(PROMON_DEBUG, "ProMon Injector: the address in injector: %p ",
                           variable->getBaseAddr());
+
         }
 
 
@@ -225,12 +226,13 @@ void Injector::startInstrumentation(BPatch_addressSpace *app, string strArgv, ve
          * We need to find out which probe function to use.
          */
         BPatch_funcCallExpr *probeFunction;
-        if ((string(it->name)).find(DATA_ACCESS) == string::npos)
+        if ((it->type).find(DATA_ACCESS) == string::npos)
             probeFunction = &probeFunction0;
         else
             probeFunction = &probeFunction1;
 
         BPatchSnippetHandle *sh;
+
 
         /*
          * If no basic block is defined to be instrumented then
@@ -254,6 +256,7 @@ void Injector::startInstrumentation(BPatch_addressSpace *app, string strArgv, ve
                 }
                 ProMon_logger(PROMON_DEBUG, "ProMon Injector: insert probe at %s %s position %p",
                               it->position.c_str(), it->name.c_str(), sh);
+
             }
 
         } else if (it->basicBlockNo != -1) {
@@ -345,11 +348,13 @@ void Injector::startInstrumentation(BPatch_addressSpace *app, string strArgv, ve
             points->clear();
 
         /*
-         * We may have created the second parameter for probe function.
-         * We need to delete it before going to next loop.
+         * We may have two extra parameter for type DATA_ACCESS
+         * We need to delete them before going to next loop.
          */
-        if (secondParam != NULL)
-            delete secondParam;
+        if (varTypeParam != NULL)
+            delete varTypeParam;
+        if (varAddressParam != NULL)
+            delete varAddressParam;
 
     }
 }

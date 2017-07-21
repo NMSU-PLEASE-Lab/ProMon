@@ -8,8 +8,8 @@ export LD_LIBRARY_PATH=${PROMONHOME}/probe:$LD_LIBRARY_PATH
 export PROMONIP=127.0.0.1
 export PROMONPORT=41111
 export JOB_SYSTEM=PBS
-# EPOLL, UDP, or LDMS
-export COMM_TYPE=TCP
+# EPOLL,TCP, UDP, MSGQUEUE,POSIX,UDP
+export COMM_TYPE=UDP
 
 # This is for testing remove on actual job run.
 export PBS_JOBID=123

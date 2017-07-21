@@ -235,8 +235,10 @@ void Analyzer::setupLogFiles(const char *rank, const char *job_id)
    
       string HOME = envVar;
       string directory = HOME+ "/" + LOG_DIRECTORY;
-      directory = directory.append(job_id);
       mkdir(directory.c_str(), 0777);
+      directory = directory.append(job_id);
+      if (mkdir(directory.c_str(), 0777) ==-1)
+           fprintf(stderr, "ProMon Analyzer: directory creation error! %s\n", strerror(errno));
       directory = directory.append("/");
       directory = directory.append(LOG_EVENTS);
       ProMon_logger(PROMON_DEBUG, "ProMon Analyzer %4d|%4d: Using %s as log file",
@@ -521,6 +523,7 @@ void Analyzer::sumup_clean(const char *rank, const char *job_id)
    directory = directory.append(job_id);
    directory = directory.append("/");
    directory = directory.append(rank);
+   mkdir(directory.c_str(), 0777); //create directory with rank
    directory = directory.append("/");
    directory = directory.append(LOG_SUMMARY);
 
