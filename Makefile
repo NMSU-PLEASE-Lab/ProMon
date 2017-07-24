@@ -90,7 +90,7 @@ all: check-env submakes promon_analyzer promon_report promon_injector
 
 submakes:
 	cd $(TINYXML); make lib TARGETCXX=$(CXX) TARGETCC=$(CC) 
-	cd probe; make TARGETCXX=$(CXX) TARGETMPICXX=$(MPICXX) DYNINSTPATH=$(DYNINSTPATH) BOOSTPATH=$(BOOSTPATH) MSGPACKPATH=$(MSGPACKPATH)
+	cd probe; make TARGETCC=$(CC) TARGETMPICC=$(MPICC)
 
 promon_injector: injector.o parser.o util.o
 	$(CXX) -o promon_injector injector.o parser.o util.o $(EXTOBJS) $(LDFLAGS) $(BOOSTLFLAGS)

@@ -136,7 +136,8 @@ void Analyzer::handleMSG(msgpack::object msg)
     * Save all received record in the file log_record
     * This statement runs after setupLogFiles() to make sure log_record is not NULL
     */
-    if(!event_type.compare("DATA_ACCESS"))
+
+    if(event_type=="DATA_ACCESS")
     {
         fprintf(appDetails->log_record, "%ld;%ld;%s;%d;%s;%s;%s;%s;%s;%s;%ld;%s;%s;%s\n",
                 lSeconds, lNanoseconds, buffer, rank, job_id.c_str(),

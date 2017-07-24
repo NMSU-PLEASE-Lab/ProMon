@@ -1,10 +1,9 @@
-CPPFLAGS := $(COMPIL_FLAGS) $(DEBUG_PROBFUNC)
-
+CFLAGS := -Wall -O0 -fPIC  $(DEBUG_PROBFUNC)
 ifeq ($(TARGET), MPI)
-  COMPILER := $(TARGETMPICXX)
-  CPPFLAGS:= $(CPPFLAGS)
+  COMPILER := $(TARGETMPICC)
+  CFLAGS:= $(CFLAGS)
 else
-  COMPILER := $(TARGETCXX)
+  COMPILER := $(TARGETCC)
 endif
 
 MAJOR := 1
@@ -22,8 +21,8 @@ lib$(LIBNAME).so.$(VERSION): $(OBJECTS)
 	ln -sf  lib$(LIBNAME).so.$(VERSION) lib$(LIBNAME).so
 	ln -sf  lib$(LIBNAME).so.$(VERSION) lib$(LIBNAME).so.1 
 
-probe.o: ../predefs.h probe.h probe.cc
-	$(COMPILER) $(CPPFLAGS) -c -o probe.o probe.cc
+probe.o: ../predefs.h probe.h probe.c
+	$(COMPILER) $(CFLAGS) -c -o probe.o probe.c
 	
 #****************************************************************************
 

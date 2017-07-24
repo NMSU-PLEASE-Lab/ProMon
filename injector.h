@@ -19,7 +19,7 @@
 
 #include <sys/types.h>
 #include <unistd.h>
-#include <signal.h>
+#include <csignal>
 
 using namespace std;
 
@@ -33,8 +33,6 @@ typedef enum
 {
    create, attach, open
 } accessType_t;
-
-
 
 class Injector
 {

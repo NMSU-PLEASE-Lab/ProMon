@@ -1,22 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <cstdlib>
 #include <string.h>
-#include <time.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <errno.h>
-#include <map>
-#include <string>
-#include <iostream>
-#include <pthread.h>
-#include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include <signal.h>
 #include <mqueue.h>
+#include <time.h>
+#include <pthread.h>
 #include "probe.h"
 
 #define MSGSZ     800
@@ -33,8 +28,6 @@
  * Some configurations are defined in predefs.h.
  */
 #include "../predefs.h"
-
-using namespace std;
 
 
 /*
@@ -112,26 +105,35 @@ static char *IP;
  */
 static char *PORT;
 
+/**** START BLOCK COUNT_EVENTS ***/
+/*This block is for countEvents function
+The function is not used for now
+Could be deleted in future
+ */
+
 /*
  * Event ID generator
  */
-static map<string, int> eventIDs;
+//static map<string, int> eventIDs;
 
 /*
  * Events counter. This counter is increased by DUAL_END
  */
-static map<string, int> counters;
+//static map<string, int> counters;
 
 /*
  * There are two counters handled by the probes.
  * both have to be thread safly changed.
  */
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+//static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+/**** END BLOCK COUNT_EVENTS ***/
+
 
 /*
  * The running application's path.
  */
-static string prgArgs = " ";
+const char *prgArgs = " ";
 
 /*
  * Event fields for begining and end of events
@@ -153,22 +155,20 @@ static unsigned int end_record_position = 1;
  */
 void atExit()
 {
-    string temp = "1:1:PROMON:" + string(LAST_RECORD);
-    sendInstRecord(prgArgs.c_str(),start_or_end_record_name,start_or_end_record_type,
-                   start_or_end_record_category,start_or_end_record_priority,
-                   end_record_position,start_or_end_record_sampling_rate);
+    sendInstRecord(prgArgs, start_or_end_record_name, start_or_end_record_type,
+                   start_or_end_record_category, start_or_end_record_priority,
+                   end_record_position, start_or_end_record_sampling_rate);
     closeSocket();
 }
 
 /*
  * Similar to above but for Ctrl+C exit. Handling signals.
  */
-void atExit(int sigNum)
+void atExitSignal(int sigNum)
 {
-    string temp = "1:1:PROMON:" + string(LAST_RECORD);
-    sendInstRecord(prgArgs.c_str(),start_or_end_record_name,start_or_end_record_type,
-                   start_or_end_record_category,start_or_end_record_priority,
-                   end_record_position,start_or_end_record_sampling_rate);
+    sendInstRecord(prgArgs, start_or_end_record_name, start_or_end_record_type,
+                   start_or_end_record_category, start_or_end_record_priority,
+                   end_record_position, start_or_end_record_sampling_rate);
     closeSocket();
 }
 
@@ -179,10 +179,9 @@ void atExit(int sigNum)
  */
 void atQuickExit(void)
 {
-    string temp = "1:1:PROMON:" + string(LAST_RECORD);
-    sendInstRecord(prgArgs.c_str(),start_or_end_record_name,start_or_end_record_type,
-                   start_or_end_record_category,start_or_end_record_priority,
-                   end_record_position,start_or_end_record_sampling_rate);
+    sendInstRecord(prgArgs, start_or_end_record_name, start_or_end_record_type,
+                   start_or_end_record_category, start_or_end_record_priority,
+                   end_record_position, start_or_end_record_sampling_rate);
     closeSocket();
 }
 
@@ -361,7 +360,7 @@ static void getEnvData()
  * Return: -1 to eleminate the event and 0 to send it.
  * TEMPORARILY DISABLED
  */
-//static int getEnvData(const char *eventRate, const char *eventPriority, const char *eventCategory)
+//static int getEnvDataSampling(const char *eventRate, const char *eventPriority, const char *eventCategory)
 //{
 //    char *rate = getenv("PROMON_SAMPLING_RATE");
 //    char *priority = getenv("PROMON_BLOCK_PRIORITY");
@@ -391,41 +390,42 @@ static void getEnvData()
  * Count all event types. The count will help us know which event is missing when
  * records are analyzed by analyzer
  * returns the last counted event.
+ * DISABLED as this is will make the probe slower
  */
-string countEvents(const char *tag)
-{
-    pthread_mutex_lock(&mutex);
-
-    string returnVal;
-    string key = string(tag);
-    char temp[BUF_SIZE];
-
-    if (key.find(DUAL_BEGIN) != string::npos) {
-        key = key.substr(strlen(DUAL_BEGIN));
-        eventIDs[key] = eventIDs[key] + 1;
-        sprintf(temp, "#%d#0", eventIDs[key]);
-        returnVal = string(temp);
-
-    } else if (key.find(DUAL_END) != string::npos) {
-        key = key.substr(strlen(DUAL_END));
-        int n = eventIDs[key];
-        eventIDs[key] = eventIDs[key] - 1;
-        counters[key] = counters[key] + 1;
-        sprintf(temp, "#%d#%d", n, counters[key]);
-        returnVal = string(temp);
-    }
-
-    pthread_mutex_unlock(&mutex);
-
-    return returnVal;
-}
+//string countEvents(const char *tag)
+//{
+//    pthread_mutex_lock(&mutex);
+//
+//    string returnVal;
+//    string key = string(tag);
+//    char temp[BUF_SIZE];
+//
+//    if (key.find(DUAL_BEGIN) != string::npos) {
+//        key = key.substr(strlen(DUAL_BEGIN));
+//        eventIDs[key] = eventIDs[key] + 1;
+//        sprintf(temp, "#%d#0", eventIDs[key]);
+//        returnVal = string(temp);
+//
+//    } else if (key.find(DUAL_END) != string::npos) {
+//        key = key.substr(strlen(DUAL_END));
+//        int n = eventIDs[key];
+//        eventIDs[key] = eventIDs[key] - 1;
+//        counters[key] = counters[key] + 1;
+//        sprintf(temp, "#%d#%d", n, counters[key]);
+//        returnVal = string(temp);
+//    }
+//
+//    pthread_mutex_unlock(&mutex);
+//
+//    return returnVal;
+//}
 
 /*
  * Creates instrumentation record, send it to the analyzer using TCP/IP socket
  * tag is the main data generated from the running code. It contains tag info and some other data from the application.
  * tag does not have the time that it generated. We create the time here in this function and send the data.
  */
-int sendInstRecordTCP(msgpack_sbuffer* msgpack_buffer)
+int sendInstRecordTCP(msgpack_sbuffer *msgpack_buffer)
 {
 
     /*
@@ -457,7 +457,7 @@ int sendInstRecordTCP(msgpack_sbuffer* msgpack_buffer)
  * tag is the main data generated from the running code. It contains tag info and some other data from the application.
  * tag does not have the time that it generated. We create the time here in this function and send the data.
  */
-int sendInstRecordMSGQUEUE(msgpack_sbuffer* msgpack_buffer)
+int sendInstRecordMSGQUEUE(msgpack_sbuffer *msgpack_buffer)
 {
 
     /*
@@ -506,7 +506,7 @@ int sendInstRecordMSGQUEUE(msgpack_sbuffer* msgpack_buffer)
  * tag is the main data generated from the running code. It contains tag info and some other data from the application.
  * tag does not have the time that it generated. We create the time here in this function and send the data.
  */
-int sendInstRecordPOSIX(msgpack_sbuffer* msgpack_buffer)
+int sendInstRecordPOSIX(msgpack_sbuffer *msgpack_buffer)
 {
     /*
      * We count all events generated.
@@ -546,7 +546,7 @@ int sendInstRecordPOSIX(msgpack_sbuffer* msgpack_buffer)
  * tag is the main data generated from the running code. It contains tag info and some other data from the application.
  * tag does not have the time that it generated. We create the time here in this function and send the data.
  */
-int sendInstRecordUDP(msgpack_sbuffer* msgpack_buffer)
+int sendInstRecordUDP(msgpack_sbuffer *msgpack_buffer)
 {
 
     /*
@@ -564,7 +564,7 @@ int sendInstRecordUDP(msgpack_sbuffer* msgpack_buffer)
     eventCount++;
 
     ssize_t n = sendto(s, msgpack_buffer->data, msgpack_buffer->size, 0,
-                   (struct sockaddr *) &si_other, slen);
+                       (struct sockaddr *) &si_other, slen);
     if (n < 0)
         fprintf(stderr, "ProMon ProbeLib: sending data failed! %s\n", strerror(errno));
 
@@ -574,9 +574,9 @@ int sendInstRecordUDP(msgpack_sbuffer* msgpack_buffer)
 /*
  * This function is for all events except DATA_ACCESS
  */
-extern "C"
-int sendInstRecord(const char *args, const char *name, const char *type, const char *category, unsigned int priority,
-                   unsigned int position, unsigned int samplingRate)
+extern int
+sendInstRecord(const char *args, const char *name, const char *type, const char *category, unsigned int priority,
+               unsigned int position, unsigned int samplingRate)
 {
     /*
      * procLimiter defines if this rank can send data
@@ -585,7 +585,7 @@ int sendInstRecord(const char *args, const char *name, const char *type, const c
         return -1;
 
     /* Keep a all args here. ProMon will send it one time to inform Analyzer what are the args */
-    if (prgArgs == " ") {
+    if (strcmp(prgArgs, " ") == 0) {
         /* GET all env Data at START of first event */
         getEnvData();
 
@@ -593,11 +593,11 @@ int sendInstRecord(const char *args, const char *name, const char *type, const c
         atexit(atExit);
 
         /* Make sure no file kept open after terminating */
-        signal(SIGINT, atExit);
+        signal(SIGINT, atExitSignal);
         prgArgs = args;
-        sendInstRecord(args,start_or_end_record_name,start_or_end_record_type,
-                       start_or_end_record_category,start_or_end_record_priority,
-                       start_record_position,start_or_end_record_sampling_rate);
+        sendInstRecord(args, start_or_end_record_name, start_or_end_record_type,
+                       start_or_end_record_category, start_or_end_record_priority,
+                       start_record_position, start_or_end_record_sampling_rate);
     }
 
     /* This block is for sampling of events, need to work on this
@@ -610,7 +610,7 @@ int sendInstRecord(const char *args, const char *name, const char *type, const c
 //        sprintf(samplingRateString, "%d", priority);
 //
 //
-//        if (getEnvData(samplingRateString, priorityString, category) == -1) {
+//        if (getEnvDataSampling(samplingRateString, priorityString, category) == -1) {
 //            return 0;
 //        }
 //    }
@@ -675,8 +675,7 @@ int sendInstRecord(const char *args, const char *name, const char *type, const c
 
     if ((strcmp(comm_type, "TCP") == 0) || (strcmp(comm_type, "EPOLL") == 0)) {
         sendInstRecordTCP(&msgpack_buffer);
-    }
-    else if (strcmp(comm_type, "MSGQUEUE") == 0) {
+    } else if (strcmp(comm_type, "MSGQUEUE") == 0) {
         sendInstRecordMSGQUEUE(&msgpack_buffer);
     } else if (strcmp(comm_type, "POSIX") == 0) {
         sendInstRecordPOSIX(&msgpack_buffer);
@@ -687,13 +686,15 @@ int sendInstRecord(const char *args, const char *name, const char *type, const c
     return 0;
 
 }
+
 /*
  * This is data access probe function.
  * This function recieves the typical tag to send and the
  * address of the varaible to read.
  */
-extern "C"
-int accessDataInst(const char *args, const char *name, const char *type, const char *category, unsigned int priority,unsigned int position, unsigned int samplingRate,const char *varType, void *varAdd)
+extern int
+accessDataInst(const char *args, const char *name, const char *type, const char *category, unsigned int priority,
+               unsigned int position, unsigned int samplingRate, const char *varType, void *varAdd)
 {
     /*
      * procLimiter defines if this rank can send data
@@ -702,7 +703,7 @@ int accessDataInst(const char *args, const char *name, const char *type, const c
         return -1;
 
     /* Keep a all args here. ProMon will send it one time to inform Analyzer what are the args */
-    if (prgArgs == " ") {
+    if (strcmp(prgArgs, " ") == 0) {
         /* GET all env Data at START of first event */
         getEnvData();
 
@@ -710,11 +711,11 @@ int accessDataInst(const char *args, const char *name, const char *type, const c
         atexit(atExit);
 
         /* Make sure no file kept open after terminating */
-        signal(SIGINT, atExit);
+        signal(SIGINT, atExitSignal);
         prgArgs = args;
-        sendInstRecord(args,start_or_end_record_name,start_or_end_record_type,
-                       start_or_end_record_category,start_or_end_record_priority,
-                       start_record_position,start_or_end_record_sampling_rate);
+        sendInstRecord(args, start_or_end_record_name, start_or_end_record_type,
+                       start_or_end_record_category, start_or_end_record_priority,
+                       start_record_position, start_or_end_record_sampling_rate);
     }
     /* To get the current second and nanoseconds*/
     struct timespec time1;
@@ -730,7 +731,7 @@ int accessDataInst(const char *args, const char *name, const char *type, const c
 //        sprintf(samplingRateString, "%d", priority);
 //
 //
-//        if (getEnvData(samplingRateString, priorityString, category) == -1) {
+//        if (getEnvDataSampling(samplingRateString, priorityString, category) == -1) {
 //            return 0;
 //        }
 //    }
@@ -795,26 +796,25 @@ int accessDataInst(const char *args, const char *name, const char *type, const c
 
     char varValue[BUF_SIZE] = "";
     if (strcmp(varType, "short") == 0) {
-        short *temp = static_cast<short*> (varAdd);
+        short *temp = (short *) varAdd;
         sprintf(varValue, "%hu", *temp);
     } else if (strcmp(varType, "int") == 0) {
-        int *temp = static_cast<int*> (varAdd);
+        int *temp = (int *) (varAdd);
         sprintf(varValue, "%d", *temp);
     } else if (strcmp(varType, "long") == 0) {
-        long *temp = static_cast<long*> (varAdd);
+        long *temp = (long *) (varAdd);
         sprintf(varValue, "%ld", *temp);
     } else if (strcmp(varType, "float") == 0) {
-        float *temp = static_cast<float*> (varAdd);
+        float *temp = (float *) (varAdd);
         sprintf(varValue, "%g", *temp);
-    }else if (strcmp(varType, "long double") == 0) {
-        long double *temp = static_cast<long double*> (varAdd);
+    } else if (strcmp(varType, "long double") == 0) {
+        long double *temp = (long double *) (varAdd);
         sprintf(varValue, "%Lg", *temp);
-    }
-    else if (strcmp(varType, "double") == 0) {
-        double *temp = static_cast<double*> (varAdd);
+    } else if (strcmp(varType, "double") == 0) {
+        double *temp = (double *) (varAdd);
         sprintf(varValue, "%g", *temp);
     } else if (strcmp(varType, "bool") == 0) {
-        short *temp = static_cast<short*> (varAdd);
+        short *temp = (short *) (varAdd);
         sprintf(varValue, "%s", (*temp ? "TRUE" : "FALSE"));
     }
 
@@ -824,8 +824,7 @@ int accessDataInst(const char *args, const char *name, const char *type, const c
 
     if ((strcmp(comm_type, "TCP") == 0) || (strcmp(comm_type, "EPOLL") == 0)) {
         sendInstRecordTCP(&msgpack_buffer);
-    }
-    else if (strcmp(comm_type, "MSGQUEUE") == 0) {
+    } else if (strcmp(comm_type, "MSGQUEUE") == 0) {
         sendInstRecordMSGQUEUE(&msgpack_buffer);
     } else if (strcmp(comm_type, "POSIX") == 0) {
         sendInstRecordPOSIX(&msgpack_buffer);
