@@ -111,6 +111,12 @@ testcase:
 
 #****************************************************************************
 
+#****************************************************************************
+
+loopsPrinter:
+	cd loopsPrinter; make TARGETCPP=$(CPP)  DYNINST_INCLUDE=-I$(DYNINSTPATH)/include LDFLAGS=$(LDFLAGS)
+
+#****************************************************************************
 install:
 ifeq ($(instpath),)
 	$(info Installing in lib/)
